@@ -1,9 +1,9 @@
-# monday_secretary/models.py
-from pydantic import BaseModel, Field
-from typing import Optional, Literal
 from datetime import datetime, date
+from typing import Optional, Literal
+from pydantic import BaseModel, Field
 
 
+# ---------- 体調 ----------
 class HealthRequest(BaseModel):
     sheet_url: str
     mode: Literal["latest", "compare", "period", "dailySummary"]
@@ -11,6 +11,7 @@ class HealthRequest(BaseModel):
     end_date: Optional[date] = None
 
 
+# ---------- カレンダー ----------
 class CalendarRequest(BaseModel):
     action: Literal["insert", "get", "update", "delete"]
     calendar_id: Optional[str] = None
@@ -20,6 +21,7 @@ class CalendarRequest(BaseModel):
     event_id: Optional[str] = None
 
 
+# ---------- 記憶 ----------
 class MemoryRequest(BaseModel):
     title: str
     summary: str
