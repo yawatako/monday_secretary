@@ -1,75 +1,72 @@
-# monday_secretary/clients/memory.py
 import os
 import asyncio
 from datetime import datetime
-from typing import Dict, Any
+from typing import Any, Dict
 
 from notion_client import Client
 from tenacity import retry, wait_fixed, stop_after_attempt
 
 
 class MemoryClient:
-    """Interact with Notion database (create / search)."""
+    """Interact with Notion database."""
 
-    def __init__(self) -> None:
+    def __init__(self):
         self.client = Client(auth=os.getenv("NOTION_TOKEN"))
-        self.db_id: str = os.getenv("NOTION_DB_ID", "")
+        self.db_id = os.getenv("NOTION_DB_ID")
 
-    # ---------- ユーティリティ ----------
+        # DB のカラム名を列挙しておくと安全
+        self.valid_props: set[str] = {
+            "Title", "Summary", "Category",
+            "Emotion", "Reason", "Timestamp"
+        }
+
+    # ---------- 共通ユーティリティ ----------
     async def _to_thread(self, func, *args, **kwargs):
-        """同期関数をスレッドで非同期実行"""
         return await asyncio.to_thread(func, *args, **kwargs)
 
-    # ---------- 追加：ペイロード変換 ----------
-    @staticmethod
+    # ---------- 内部ヘルパ ----------
     def _build_properties(self, payload: Dict[str, Any]) -> Dict[str, Any]:
-    props = {}
-    add = lambda name, value: props.setdefault(name, value) \
-          if name in self.valid_props else None
+        """Notion に渡す properties を dict で構築"""
+        props: Dict[str, Any] = {}
 
-    add("Title",    {"title":     [{"text": {"content": payload["title"]}}]})
-    add("Summary",  {"rich_text": [{"text": {"content": payload["summary"]}}]})
-    add("Category", {"select":    {"name": payload["category"]}})
-    add("Emotion",  {"select":    {"name": payload["emotion"]}})
-    add("Reason",   {"rich_text": [{"text": {"content": payload["reason"]}}]})
-    add("Timestamp",{
-        "date": {"start": (payload.get("timestamp") or datetime.utcnow()).isoformat()}
-    })
-    return props
+        # ヘルパで冗長な if 文を減らす
+        def add(name: str, value: Dict[str, Any]):
+            if name in self.valid_props:
+                props[name] = value
 
-    # ---------- ページ作成 ----------
+        add("Title", {
+            "title": [{"text": {"content": payload["title"]}}]
+        })
+        add("Summary", {
+            "rich_text": [{"text": {"content": payload["summary"]}}]
+        })
+        add("Category", {"select": {"name": payload["category"]}})
+        add("Emotion",  {"select": {"name": payload["emotion"]}})
+        add("Reason", {
+            "rich_text": [{"text": {"content": payload["reason"]}}]
+        })
+        add("Timestamp", {
+            "date": {
+                "start": (
+                    payload.get("timestamp") or datetime.utcnow()
+                ).isoformat()
+            }
+        })
+        return props
+
+    # ---------- Public API ----------
     @retry(wait=wait_fixed(2), stop=stop_after_attempt(3))
     async def create_record(self, payload: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        MemoryRequest → Notion ページを作成して結果(JSON) を返す
-        """
-        try:
-            page_body = {
-                "parent": {"database_id": self.db_id},
-                "properties": self._build_properties(payload),
-            }
-            return await self._to_thread(self.client.pages.create, **page_body)
+        page_body = {
+            "parent": {"database_id": self.db_id},
+            "properties": self._build_properties(payload)
+        }
+        return await self._to_thread(self.client.pages.create, **page_body)
 
-        except Exception as e:  # 失敗時はログを残して再送出
-            import logging, traceback
-
-            logging.error(
-                "Notion create_record failed: %s\n%s",
-                e,
-                traceback.format_exc(),
-            )
-            raise
-
-    # ---------- 検索 ----------
     @retry(wait=wait_fixed(2), stop=stop_after_attempt(3))
-    async def search(self, query: str, top_k: int = 5) -> list:
-        """全文検索 (title/テキスト) して上位 top_k 件の結果を返す"""
+    async def search(self, query: str, top_k: int = 5) -> list[Dict[str, Any]]:
         def _call():
-            return self.client.search(
-                query=query,
-                page_size=top_k,
-                sort={"direction": "descending", "timestamp": "last_edited_time"},
-            )
+            return self.client.search(query=query, page_size=top_k)
 
         result = await self._to_thread(_call)
         return result.get("results", [])
