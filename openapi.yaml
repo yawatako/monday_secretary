@@ -1,102 +1,212 @@
 openapi: 3.1.0
 info:
   title: Monday Secretary API
-  version: '1.0.0'
+  version: 1.0.0
 servers:
-  - url: https://{default_host}
-    variables:
-      default_host:
-        default: example.com
+  - url: https://health-api-server.onrender.com
 paths:
   /functions/get_health_data:
     post:
-      operationId: get_health_data
+      operationId: getHealthData
       summary: 体調データを取得
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/HealthRequest'
+              $ref: "#/components/schemas/HealthRequest"
       responses:
-        '200':
-          description: OK
+        "200":
+          description: 正常に体調データを取得
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
   /functions/get_work_data:
     post:
-      operationId: get_work_data
+      operationId: getWorkData
       summary: 業務メモ（業務記録タブ）を取得
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/GetWorkDataRequest'
+              $ref: "#/components/schemas/GetWorkDataRequest"
       responses:
-        '200':
-          description: OK
+        "200":
+          description: 正常に業務データを取得
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkDataResponse"
   /functions/calendar_event:
     post:
-      operationId: calendar_event
+      operationId: calendarEvent
       summary: カレンダー操作
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CalendarRequest'
+              $ref: "#/components/schemas/CalendarRequest"
       responses:
-        '200':
-          description: OK
+        "200":
+          description: カレンダー操作結果
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CalendarResponse"
   /functions/create_memory:
     post:
-      operationId: create_memory
+      operationId: createMemory
       summary: メモを保存
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/MemoryRequest'
+              $ref: "#/components/schemas/MemoryRequest"
       responses:
-        '200':
-          description: OK
+        "200":
+          description: メモを正常に保存
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MemoryResponse"
 components:
   schemas:
     HealthRequest:
       type: object
-      required: [sheet_url, mode]
+      required:
+        - sheet_url
+        - mode
       properties:
         sheet_url:
           type: string
         mode:
           type: string
-          enum: [latest, compare, period, dailySummary]
+          enum:
+            - latest
+            - compare
+            - period
+            - dailySummary
         start_date:
-          type: [string, 'null']
+          type:
+            - string
+            - "null"
           format: date
         end_date:
-          type: [string, 'null']
+          type:
+            - string
+            - "null"
           format: date
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: success
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              timestamp:
+                type: string
+                format: date-time
+              sleep_hours:
+                type: number
+              slept_well:
+                type: boolean
+              weight:
+                type: number
+              took_temperature:
+                type: boolean
+              period:
+                type: boolean
+              appetite:
+                type: boolean
+              digestion:
+                type: string
+              morning_med:
+                type: boolean
+              reason_for_extra_med:
+                type: string
+                nullable: true
+              energy_level:
+                type: string
+              mood:
+                type: string
+              memo:
+                type: string
     GetWorkDataRequest:
       type: object
-      required: [mode]
+      required:
+        - mode
       properties:
         mode:
           type: string
-          enum: [latest, period]
+          enum:
+            - latest
+            - period
         start_date:
-          type: [string, 'null']
+          type:
+            - string
+            - "null"
           format: date
         end_date:
-          type: [string, 'null']
+          type:
+            - string
+            - "null"
           format: date
+    WorkDataResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: success
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              timestamp:
+                type: string
+                format: date-time
+              box_setup_9am:
+                type: boolean
+              tasks_after_10am:
+                type: string
+              rest_minutes_am:
+                type: number
+              fatigue_level_am:
+                type: string
+              comment_am:
+                type: string
+              box_collected_3pm:
+                type: boolean
+              tasks_pm:
+                type: string
+              rest_minutes_pm:
+                type: number
+              fatigue_level_pm:
+                type: string
+              comment_pm:
+                type: string
+              daily_summary:
+                type: string
     CalendarRequest:
       type: object
-      required: [action]
+      required:
+        - action
       properties:
         action:
           type: string
-          enum: [insert, get, update, delete]
+          enum:
+            - insert
+            - get
+            - update
+            - delete
         calendar_id:
           type: string
           nullable: true
@@ -114,9 +224,35 @@ components:
         event_id:
           type: string
           nullable: true
+    CalendarResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: success
+        event:
+          type: object
+          properties:
+            id:
+              type: string
+            summary:
+              type: string
+            start:
+              type: string
+              format: date-time
+            end:
+              type: string
+              format: date-time
+            calendar_id:
+              type: string
     MemoryRequest:
       type: object
-      required: [title, summary, category, emotion, reason]
+      required:
+        - title
+        - summary
+        - category
+        - emotion
+        - reason
       properties:
         title:
           type: string
@@ -127,13 +263,53 @@ components:
           nullable: true
         category:
           type: string
-          enum: [スケジュール, 創作, 体調, 仕事, 遊び, 思い出, 感情, 思考, その他]
+          enum:
+            - スケジュール
+            - 創作
+            - 体調
+            - 仕事
+            - 遊び
+            - 思い出
+            - 感情
+            - 思考
+            - その他
         emotion:
           type: string
-          enum: [嬉しい, 悲しい, 怒り, 楽しい, 悔しい, 辛い]
+          enum:
+            - 嬉しい
+            - 悲しい
+            - 怒り
+            - 楽しい
+            - 悔しい
+            - 辛い
         reason:
           type: string
         timestamp:
           type: string
           format: date-time
           nullable: true
+    MemoryResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: success
+        saved_memory:
+          type: object
+          properties:
+            id:
+              type: string
+            title:
+              type: string
+            summary:
+              type: string
+            category:
+              type: string
+            emotion:
+              type: string
+            reason:
+              type: string
+            timestamp:
+              type: string
+              format: date-time
+
