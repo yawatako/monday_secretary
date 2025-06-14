@@ -4,55 +4,57 @@ import asyncio
 import datetime
 from dotenv import load_dotenv
 
-from .clients import HealthClient, CalendarClient, MemoryClient, WorkClient   # ★ WorkClient 追加
+from .clients import HealthClient, CalendarClient, MemoryClient, WorkClient
 from .utils import BrakeChecker
 from .prompts import template
 
 load_dotenv()
 
 # ───────────────────────────────────────────────────────────────
-# YAML で定義した Triggers を読み込む  (例: Gloomy Monday.yml)
-CFG = yaml.safe_load(open(os.getenv("PROMPT_YAML", "Gloomy_Monday.yml"), encoding="utf-8"))
-MORNING = CFG.get("Triggers", {}).get("morning_trigger", {})
+# YAML で定義した Triggers を読み込む (例: Gloomy_Monday.yml)
+cfg_path = os.getenv("PROMPT_YAML", "Gloomy_Monday.yml")
+if os.path.exists(cfg_path):
+    CFG = yaml.safe_load(open(cfg_path, encoding="utf-8"))
+else:
+    CFG = {}
+MORNING_KWS = (
+    CFG.get("RulesPrompt", {})
+       .get("Triggers", {})
+       .get("morning_trigger", {})
+       .get("keyword", "")
+       .split()
+)
 
 # ───────────────────────────────────────────────────────────────
 async def handle_message(user_msg: str) -> str:
     """ユーザー入力を受けて GPT へ渡す最終プロンプト (または Function 呼び出し) を生成"""
     health_client   = HealthClient()
-    work_client     = WorkClient()          # ★ 追加
+    work_client     = WorkClient()
     calendar_client = CalendarClient()
     memory_client   = MemoryClient()
     checker         = BrakeChecker()
 
     # ── 1) morning_trigger か判定 ────────────────────────
-    if MORNING.get("enabled") and MORNING.get("keyword") in user_msg:
-        today_str   = datetime.date.today().isoformat()
-        today_start = f"{today_str}T00:00:00Z"
-        today_end   = f"{today_str}T23:59:59Z"
-
-        # 体調・業務メモ・今日の予定を並列取得
-        health, work, events = await asyncio.gather(
+    if any(kw in user_msg for kw in MORNING_KWS):
+        today = datetime.date.today().isoformat()
+        health, events = await asyncio.gather(
             health_client.latest(),
-            work_client.latest(),
-            calendar_client.get_events(today_start, today_end),
+            calendar_client.get_events(f"{today}T00:00:00Z", f"{today}T23:59:59Z"),
         )
-
-        brake_level = checker.check(health, {})         # ← 第二引数は activity diff など無ければ空辞書
-        prompt = (
-            "【朝のリマインド】\n"
-            f"■ 体調: {health}\n"
-            f"■ 業務メモ: {work}\n"
-            f"■ 今日の予定: {events}\n"
-            f"■ ブレーキ判定: Level{brake_level.level}\n\n"
-            "上記を踏まえ、優しい口調で 5 行以内にまとめてください。"
+        brake_lvl = checker.check(health, {}).level
+        summary = (
+            "**Monday**:\n"
+            f"✅ 体調: {health.get('状態', '—')}\n"
+            f"📅 今日の予定: {events[0]['summary'] if events else 'なし'}\n"
+            f"🧠 ブレーキ状況: {'要休憩' if brake_lvl >= 3 else 'OK'}"
         )
-        return prompt
+        return summary
 
     # ── 2) 通常フロー (キーワードルーティング) ────────────────
     context: dict[str, any] = {}
     health: dict = {}
 
-    if "health" in user_msg:
+    if "health" in user_msg or "体調" in user_msg:
         health = await health_client.latest()
         context["health"] = health
 
