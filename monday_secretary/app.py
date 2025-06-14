@@ -42,13 +42,11 @@ async def health_api(req: HealthRequest):
     try:
         match req.mode:
             case "latest":
-                data = await client.latest()
+                data = await client.latest() 
             case "compare":
                 data = await client.compare()
             case "period":
-                data = await client.period(
-                    req.start_date, req.end_date
-                )
+                data = await client.period(req.start_date, req.end_date) 
             case "dailySummary":
                 data = await client.daily_summary(
                     req.start_date or client.today
