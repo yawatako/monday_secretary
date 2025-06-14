@@ -40,6 +40,7 @@ async def chat(req: ChatRequest):
 # ---------- Health ----------
 @app.post("/health")
 async def health_api(req: HealthRequest):
+    sheet_url = req.sheet_url or os.getenv("SHEET_URL")
     client = HealthClient()
     try:
         match req.mode:
