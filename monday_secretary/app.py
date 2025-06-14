@@ -42,13 +42,17 @@ async def health_api(req: HealthRequest):
     try:
         match req.mode:
             case "latest":
-                data = client.latest()
+                data = await client.latest()
             case "compare":
-                data = client.compare()
+                data = await client.compare()
             case "period":
-                data = client.period(req.start_date, req.end_date)
+                data = await client.period(
+                    req.start_date, req.end_date
+                )
             case "dailySummary":
-                data = client.daily_summary(req.start_date or client.today)
+                data = await client.daily_summary(
+                    req.start_date or client.today
+                )
         return data
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
