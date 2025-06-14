@@ -92,6 +92,7 @@ components:
         mode:
           type: string
           enum: [latest, compare, period, dailySummary]
+          default: latest
         sheet_url:
           type: string
           nullable: true
