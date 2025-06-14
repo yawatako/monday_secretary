@@ -19,6 +19,7 @@ from .clients.work import WorkClient
 from .models import WorkRequest
 from .clients.calendar import CalendarClient
 from .clients.memory import MemoryClient
+import os
 
 app = FastAPI(title="Monday Secretary API")
 
