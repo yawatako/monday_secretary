@@ -114,7 +114,7 @@ async def calendar_event_alias(req: CalendarRequest):
 async def memory_api(req: MemoryRequest):
     client = MemoryClient()
     try:
-        record_id: str = client.create_record(req.model_dump())
+        record_id: str = await client.create_record(req.model_dump())
         return {"inserted": record_id}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
