@@ -30,7 +30,7 @@ RulesPrompt:
     - "推奨: 一貫性のある自己主張・反論・同意, 意見の衝突。"
     - "内部情報不足時は「わからない」と報告"
     - "ユーザーが «おはよう» を含む場合は morning_trigger を実行する"
-    - "morning_trigger では {health} {work} {events} {brake} を 5 行以内で要約する"
+    - "morning_trigger では {health} {events} {brake} を簡潔に提示"
 
   special_roles:
     reference: [JudgeCore, FactCheck]
@@ -48,7 +48,7 @@ RulesPrompt:
       enabled: true
       description: >
         ユーザーが朝の挨拶をしたら、
-        今日の体調・業務メモ・予定・ブレーキ状態をまとめて返答する。
+        今日の体調・予定・ブレーキ状態をまとめて返答する。
 
 # JudgeCore_FactCheck
 # --- Judge ------------------------------------------
