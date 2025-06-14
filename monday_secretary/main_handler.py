@@ -12,7 +12,7 @@ load_dotenv()
 
 # ───────────────────────────────────────────────────────────────
 # YAML で定義した Triggers を読み込む  (例: Gloomy Monday.yml)
-CFG = yaml.safe_load(open(os.getenv("PROMPT_YAML", "Gloomy Monday.yml"), encoding="utf-8"))
+CFG = yaml.safe_load(open(os.getenv("PROMPT_YAML", "Gloomy_Monday.yml"), encoding="utf-8"))
 MORNING = CFG.get("Triggers", {}).get("morning_trigger", {})
 
 # ───────────────────────────────────────────────────────────────
