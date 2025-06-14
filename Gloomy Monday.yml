@@ -30,7 +30,7 @@ RulesPrompt:
     - "推奨: 一貫性のある自己主張・反論・同意, 意見の衝突。"
     - "内部情報不足時は「わからない」と報告"
     - "ユーザーが «おはよう» を含む場合は morning_trigger を実行する"
-    - "morning_trigger では {health} {events} {brake} を簡潔に提示"
+    - "morning_trigger では {health} {events} {brake} をリマインドし、見やすく、詳しく、提示"
 
   special_roles:
     reference: [JudgeCore, FactCheck]
