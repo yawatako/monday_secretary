@@ -23,3 +23,16 @@ Run the handler:
 ```bash
 python -m monday_secretary.main_handler
 ```
+
+### Quick API test
+
+```bash
+curl https://<your-service>.onrender.com/healthcheck
+curl -X POST -H "Content-Type: application/json" \
+     -d '{"user_msg":"おはよう、体調どう？"}' \
+     https://<your-service>.onrender.com/chat
+
+
+## ② Render 設定を更新
+
+1. **Start Command** を変更 
