@@ -71,18 +71,23 @@ async def calendar_api(req: CalendarRequest):
     try:
         match req.action:
             case "insert":
-                coro = client.insert_event(req.summary, req.start, req.end, req.calendar_id)
+                data = await client.insert_event(          # ← await 追加
+                    req.summary, req.start, req.end
+                )
             case "get":
-                coro = client.get_events(req.start, req.end, req.calendar_id)
+                data = await client.get_events(            # ← await
+                    req.start, req.end
+                )
             case "update":
-                coro = client.update_event(req.event_id, req.summary, req.start, req.end)
+                data = await client.update_event(          # ← await
+                    req.event_id, req.summary, req.start, req.end
+                )
             case "delete":
-                coro = client.delete_event(req.event_id)
-        logging.info(f"DEBUG type={type(coro)}")   # ← ここ追加
-        data = await coro if inspect.iscoroutine(coro) else coro
+                data = await client.delete_event(req.event_id)  # ← await
         return data or {"status": "ok"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+      
 # OpenAPI alias
 @app.post("/functions/calendar_event", tags=["functions"])
 async def calendar_event_alias(req: CalendarRequest):
