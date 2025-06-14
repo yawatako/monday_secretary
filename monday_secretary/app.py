@@ -67,13 +67,19 @@ async def calendar_api(req: CalendarRequest):
     try:
         match req.action:
             case "insert":
-                data = client.insert_event(req.summary, req.start, req.end, req.calendar_id)
+                data = await client.insert_event(
+                    req.summary, req.start, req.end, req.calendar_id
+                )
             case "get":
-                data = client.get_events(req.start, req.end, req.calendar_id)
+                data = await client.get_events(
+                    req.start, req.end, req.calendar_id
+                )
             case "update":
-                data = client.update_event(req.event_id, req.summary, req.start, req.end)
+                data = await client.update_event(
+                    req.event_id, req.summary, req.start, req.end
+                )
             case "delete":
-                data = client.delete_event(req.event_id)
+                data = await client.delete_event(req.event_id) 
         return data or {"status": "ok"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
