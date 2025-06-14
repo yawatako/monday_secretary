@@ -31,7 +31,6 @@ class CalendarRequest(BaseModel):
 class MemoryRequest(BaseModel):
     title: str
     summary: str
-    detail:   Optional[str] = ""
     category: Literal[
         "スケジュール", "創作", "体調", "仕事", "遊び",
         "思い出", "感情", "思考", "その他"
