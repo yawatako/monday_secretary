@@ -119,6 +119,11 @@ async def memory_api(req: MemoryRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+# OpenAPI alias ---------------------------------------
+@app.post("/functions/create_memory", tags=["functions"])
+async def create_memory_alias(req: MemoryRequest):
+    # ② alias 側も 同じ memory_api を await 渡し
+    return await memory_api(req)
 
 # ---------- Healthcheck (既存) ----------
 @app.get("/healthcheck")
