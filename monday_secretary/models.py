@@ -10,6 +10,11 @@ class HealthRequest(BaseModel):
     start_date: Optional[date] = None
     end_date: Optional[date] = None
 
+# ---------- 業務 ----------
+class WorkRequest(BaseModel):
+    mode: Literal["latest", "period"]
+    start_date: Optional[date] = None
+    end_date:   Optional[date] = None
 
 # ---------- カレンダー ----------
 class CalendarRequest(BaseModel):
