@@ -22,39 +22,20 @@ class MemoryClient:
 
     # ---------- 追加：ペイロード変換 ----------
     @staticmethod
-    def _build_properties(payload: Dict[str, Any]) -> Dict[str, Any]:
-        """MemoryRequest(dict) → Notion properties"""
-        props = {
-            "Title": {
-                "title": [{"text": {"content": payload["title"]}}],
-            },
-            "Summary": {
-                "rich_text": [{"text": {"content": payload["summary"]}}],
-            },
-            "Category": {
-                "select": {"name": payload["category"]},
-            },
-            "Emotion": {
-                "select": {"name": payload["emotion"]},
-            },
-            "Reason": {
-                "rich_text": [{"text": {"content": payload["reason"]}}],
-            },
-            "Timestamp": {
-                "date": {
-                    "start": (
-                        payload.get("timestamp") or datetime.utcnow()
-                    ).isoformat()
-                },
-            },
-        }
+    def _build_properties(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+    props = {}
+    add = lambda name, value: props.setdefault(name, value) \
+          if name in self.valid_props else None
 
-        # 任意フィールド detail
-        if payload.get("detail"):
-            props["Detail"] = {
-                "rich_text": [{"text": {"content": payload["detail"]}}],
-            }
-        return props
+    add("Title",    {"title":     [{"text": {"content": payload["title"]}}]})
+    add("Summary",  {"rich_text": [{"text": {"content": payload["summary"]}}]})
+    add("Category", {"select":    {"name": payload["category"]}})
+    add("Emotion",  {"select":    {"name": payload["emotion"]}})
+    add("Reason",   {"rich_text": [{"text": {"content": payload["reason"]}}]})
+    add("Timestamp",{
+        "date": {"start": (payload.get("timestamp") or datetime.utcnow()).isoformat()}
+    })
+    return props
 
     # ---------- ページ作成 ----------
     @retry(wait=wait_fixed(2), stop=stop_after_attempt(3))
