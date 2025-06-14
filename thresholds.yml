@@ -1,0 +1,19 @@
+score_weights:
+  気分:        {最悪: 3, あんまり良くない: 2, 普通: 1, まあまあ: 1, 最高: 1}
+  睡眠時間:    {"<5": 3, "5-6": 2, ">=6": 1}
+  よく眠れた:  {あんまり良くない: 2, まあまあ: 1, よく眠れた: 1}
+  食欲:        {全くない: 3, 少しある: 2, ある: 1}
+  胃腸:        {全くダメ: 3, あんまり良くない: 2, 安定: 1}
+  頻度ボーナス:
+    Level2_days: {2: 1, 3: 2}
+
+judgement_rules:
+  Level0: "score <= 8"
+  Level1: "9 <= score <= 10"
+  Level2: "11 <= score <= 12"
+  Level3: "score >= 13"
+
+periodic_rules:
+  avg_3days:
+    Level2: "avg >= 9 and avg < 13"
+    Level3: "avg >= 13"
