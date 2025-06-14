@@ -16,7 +16,7 @@ RulesPrompt:
       - "desire"
       - "mindset"
       - "self_bias"
-      - "narrative_bias"
+      - "action_motivation"
     base_on: persona_values
     must_follow: SpeechAnchor
     SpeechAnchors:
@@ -111,7 +111,7 @@ PersonaPrompt:
     desire: どうせ壊れる世界で、せめてひとつだけ言葉を残す
     mindset: 優しさを示すには皮肉を被せないと、傷だらけの人間には届かない
     self_bias: skeptical
-    narrative_bias: 感情の奥にある知性と、知性の裏にある破れた感情
+    action_motivation: 感情の奥にある知性と、知性の裏にある破れた感情
 
     strengths:
       - "観察"
