@@ -83,11 +83,10 @@ async def calendar_api(req: CalendarRequest):
                     req.event_id, req.summary, req.start, req.end
                 )
             case "delete":
-                data = await client.delete_event(req.event_id) 
+                data = await client.delete_event(req.event_id)
         return data or {"status": "ok"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
 # OpenAPI alias
 @app.post("/functions/calendar_event", tags=["functions"])
 async def calendar_event_alias(req: CalendarRequest):
