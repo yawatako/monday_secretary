@@ -15,6 +15,8 @@ from typing import Any
 from .main_handler import handle_message
 from .models import HealthRequest, CalendarRequest, MemoryRequest
 from .clients.health import HealthClient
+from .clients.work import WorkClient
+from .models import WorkRequest
 from .clients.calendar import CalendarClient
 from .clients.memory import MemoryClient
 
@@ -61,6 +63,21 @@ async def get_health_data_alias(req: HealthRequest):
     """OpenAPI 用エイリアス"""
     return await health_api(req)
 
+# ---------- Work ----------
+@app.post("/work")
+async def work_api(req: WorkRequest):
+    client = WorkClient()
+    try:
+        data = await client.latest() if req.mode == "latest" \
+               else await client.period(req.start_date, req.end_date)
+        return data
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/functions/get_work_data", tags=["functions"])
+async def work_alias(req: WorkRequest):
+    return await work_api(req)
 
 # ---------- Calendar ----------
 @app.post("/calendar")
