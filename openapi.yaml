@@ -258,9 +258,6 @@ components:
           type: string
         summary:
           type: string
-        detail:
-          type: string
-          nullable: true
         category:
           type: string
           enum:
