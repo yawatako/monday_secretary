@@ -53,6 +53,12 @@ async def health_api(req: HealthRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+# OpenAPI alias
+@app.post("/functions/get_health_data", tags=["functions"])
+async def get_health_data_alias(req: HealthRequest):
+    """OpenAPI 用エイリアス"""
+    return await health_api(req)
+
 
 # ---------- Calendar ----------
 @app.post("/calendar")
@@ -72,6 +78,10 @@ async def calendar_api(req: CalendarRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+# OpenAPI alias
+@app.post("/functions/calendar_event", tags=["functions"])
+async def calendar_event_alias(req: CalendarRequest):
+    return await calendar_api(req)
 
 # ---------- Memory ----------
 @app.post("/memory")
@@ -88,3 +98,8 @@ async def memory_api(req: MemoryRequest):
 @app.get("/healthcheck")
 async def healthcheck():
     return {"status": "ok", "version": "0.1.0"}
+
+# OpenAPI alias
+@app.post("/functions/create_memory", tags=["functions"])
+async def create_memory_alias(req: MemoryRequest):
+    return await memory_api(req)
