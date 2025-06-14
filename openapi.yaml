@@ -87,7 +87,6 @@ components:
     # ---------- Health ----------
     HealthRequest:
       type: object
-      required: [mode]
       properties:
         mode:
           type: string
