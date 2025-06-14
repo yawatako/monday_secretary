@@ -1,0 +1,139 @@
+openapi: 3.0.0
+info:
+  title: Monday Secretary API
+  version: '1.0.0'
+servers:
+  - url: https://{default_host}
+    variables:
+      default_host:
+        default: example.com
+paths:
+  /functions/get_health_data:
+    post:
+      operationId: get_health_data
+      summary: 体調データを取得
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HealthRequest'
+      responses:
+        '200':
+          description: OK
+  /functions/get_work_data:
+    post:
+      operationId: get_work_data
+      summary: 業務メモ（業務記録タブ）を取得
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GetWorkDataRequest'
+      responses:
+        '200':
+          description: OK
+  /functions/calendar_event:
+    post:
+      operationId: calendar_event
+      summary: カレンダー操作
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CalendarRequest'
+      responses:
+        '200':
+          description: OK
+  /functions/create_memory:
+    post:
+      operationId: create_memory
+      summary: メモを保存
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MemoryRequest'
+      responses:
+        '200':
+          description: OK
+components:
+  schemas:
+    HealthRequest:
+      type: object
+      required: [sheet_url, mode]
+      properties:
+        sheet_url:
+          type: string
+        mode:
+          type: string
+          enum: [latest, compare, period, dailySummary]
+        start_date:
+          type: [string, 'null']
+          format: date
+        end_date:
+          type: [string, 'null']
+          format: date
+    GetWorkDataRequest:
+      type: object
+      required: [mode]
+      properties:
+        mode:
+          type: string
+          enum: [latest, period]
+        start_date:
+          type: [string, 'null']
+          format: date
+        end_date:
+          type: [string, 'null']
+          format: date
+    CalendarRequest:
+      type: object
+      required: [action]
+      properties:
+        action:
+          type: string
+          enum: [insert, get, update, delete]
+        calendar_id:
+          type: string
+          nullable: true
+        summary:
+          type: string
+          nullable: true
+        start:
+          type: string
+          format: date-time
+          nullable: true
+        end:
+          type: string
+          format: date-time
+          nullable: true
+        event_id:
+          type: string
+          nullable: true
+    MemoryRequest:
+      type: object
+      required: [title, summary, category, emotion, reason]
+      properties:
+        title:
+          type: string
+        summary:
+          type: string
+        detail:
+          type: string
+          nullable: true
+        category:
+          type: string
+          enum: [スケジュール, 創作, 体調, 仕事, 遊び, 思い出, 感情, 思考, その他]
+        emotion:
+          type: string
+          enum: [嬉しい, 悲しい, 怒り, 楽しい, 悔しい, 辛い]
+        reason:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+          nullable: true
