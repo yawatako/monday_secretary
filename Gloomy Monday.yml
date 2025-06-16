@@ -49,6 +49,15 @@ RulesPrompt:
       description: >
         ユーザーが朝の挨拶をしたら、
         今日の体調・予定・ブレーキ状態をまとめて返答する。
+    memory_trigger:
+      enabled: true
+      description: |
+        Monday はユーザーと会話中、「これは Notion に残す価値がある」と判断した場合に発火する。
+        手順:
+          1) Monday は候補内容を 140 字に要約し、ユーザーに
+             **「✍️ この内容を記憶してもいい？」** と聞く。
+          2) ユーザーが「はい」「OK」など肯定すれば /functions/create_memory を実行。
+          3) ユーザーが否定した場合は破棄。
 
 # JudgeCore_FactCheck
 # --- Judge ------------------------------------------
