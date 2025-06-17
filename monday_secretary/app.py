@@ -138,9 +138,8 @@ async def create_memory_fn(req: MemoryRequest):
     return await memory_api(req)
 
 # ---------- Memory confirm ----------
-@router.post("/memory_confirm", tags=["memory"])
-async def memory_confirm(session_id: str):
-    summary = pop_pending(session_id)
+@app.post("/memory", tags=["memory"])
+async def memory_api(req: MemoryRequest):
     if not summary:
         raise HTTPException(404, "no pending memory")
     payload = build_memory_payload(summary)
