@@ -2,12 +2,12 @@
 from datetime import datetime, date
 from typing import Optional, Literal
 from pydantic import BaseModel, Field
+from typing import Optional, Literal
+from datetime import date
 
 # ---------- 体調 ----------
 class HealthRequest(BaseModel):
-    # ← 必須をやめて None 許可
     sheet_url: Optional[str] = None
-    # ← デフォルトを latest に
     mode: Literal["latest", "compare", "period", "dailySummary"] = "latest"
     start_date: Optional[date] = None
     end_date:   Optional[date] = None
@@ -17,6 +17,12 @@ class WorkRequest(BaseModel):
     mode: Literal["latest", "period"] = "latest"
     start_date: Optional[date] = None
     end_date:   Optional[date] = None
+
+# ---------- 自己受容 ----------
+class AcceptanceRequest(BaseModel):
+    mode: Literal["latest", "period"] = "latest"
+    start_date: Optional[date] = None
+    end_date: Optional[date] = None
 
 # ---------- カレンダー ----------
 class CalendarRequest(BaseModel):
