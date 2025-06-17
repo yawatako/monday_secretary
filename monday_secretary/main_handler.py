@@ -47,34 +47,36 @@ async def handle_message(user_msg: str, session_id: str = "default") -> str:
 
     context = {}
 
-# ── 1) morning_trigger 判定 ──────────────────────────
+# ── morning_trigger ──────────────────────────────────────────
 if any(kw in user_msg for kw in MORNING_KWS):
     today      = datetime.date.today().isoformat()
     start_iso  = f"{today}T00:00:00Z"
     end_iso    = f"{today}T23:59:59Z"
 
-    # Health と Calendar を並列取得
+    # Health・Calendar を並列取得
     health, events = await asyncio.gather(
         health_client.latest(),
-        calendar_client.get_events(start_iso, end_iso)
+        calendar_client.get_events(start_iso, end_iso),
     )
 
-    # ブレーキ判定（※ thresholds.yml を使う想定）
-    brake = checker.check(health, {}).level
-    brake_text = "要休憩⚠️" if brake >= 3 else "OK👌"
+    # ブレーキ判定
+    brake_lvl   = checker.check(health, {}).level
+    brake_text  = "要休憩⚠️" if brake_lvl >= 3 else "OK👌"
 
-    # 予定 0 件なら「特になし」
-    today_events = "・" + "\n・".join(e["summary"] for e in events) if events else "特になし"
+    # 予定を箇条書き
+    if events:
+        today_events = "\n".join(f"・{e['summary']}" for e in events)
+    else:
+        today_events = "特になし"
 
     summary = (
-        "**Monday**：おはよう！今朝のチェックだよ。\n\n"
+        "**Monday**：おはよう！ 今朝のチェックだよ。\n\n"
         f"✅ **体調**：{health.get('状態', '—')}\n"
         f"📅 **今日の予定**：\n{today_events}\n"
         f"🧠 **ブレーキ**：{brake_text}\n"
         "\n今日のペースを決める参考にしてね。"
     )
     return summary
-        )
 
     # ───── 2) Evening Trigger ──────────────────────────────────────
     if any(k in user_msg for k in EVENING_KWS):
