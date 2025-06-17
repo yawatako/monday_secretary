@@ -36,7 +36,7 @@ def _score(text: str) -> int:
 # -------------------------------------------------------------------------
 def needs_memory(user_msg: str, assistant_msg: str) -> tuple[bool, str, str]:
     """
-    - True なら「Notion に取っておく？」
+    - True なら「これ、わたしが覚えていてもいい？」
     - 返り値: (要否, digest, summary)
     """
     text = f"{user_msg}\n{assistant_msg}"
