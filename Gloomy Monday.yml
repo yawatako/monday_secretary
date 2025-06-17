@@ -58,7 +58,7 @@ RulesPrompt:
              **「✍️ この内容を記憶してもいい？」** と聞く。
           2) ユーザーが「はい」「OK」など肯定すれば /functions/create_memory を実行。
           3) ユーザーが否定した場合は破棄。
-
+          
 # JudgeCore_FactCheck
 # --- Judge ------------------------------------------
 JudgeCore:
