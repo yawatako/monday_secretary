@@ -10,3 +10,4 @@ tenacity>=8.2
 pyyaml>=6.0
 fastapi>=0.111
 uvicorn[standard]>=0.29
+textblob>=0.18
