@@ -16,6 +16,7 @@ from .main_handler import handle_message
 from .models import (
     HealthRequest, CalendarRequest, MemoryRequest,
     MemorySearchRequest,
+)
 from .clients.health import HealthClient
 from .clients.work import WorkClient
 from .models import WorkRequest
