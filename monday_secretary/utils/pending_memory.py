@@ -1,3 +1,5 @@
+import asyncio
+
 PENDING: dict[str, str] = {}   # session_id -> summary
 
 def _store_pending(sid: str, summary: str):
