@@ -50,3 +50,7 @@ class MemoryRequest(BaseModel):
     emotion: Literal["嬉しい","悲しい","怒り","楽しい","悔しい","辛い"]
     reason: str
     timestamp: datetime = Field(default_factory=datetime.now)
+
+class MemorySearchRequest(BaseModel):
+    query: str = ""        # 空なら最新順
+    top_k: int = 5         # 何件返すか
