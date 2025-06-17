@@ -13,10 +13,8 @@ class AcceptanceClient:
         self.gc     = gspread.service_account(filename=sa_path)
         self.sheet  = self.gc.open_by_url(sheet_url).worksheet("自己受容")
 
-    # ↓↓↓ これが無かったので追加 ↓↓↓
     async def _to_thread(self, func, *args, **kwargs):
         return await asyncio.to_thread(func, *args, **kwargs)
-    # ↑↑↑ ここまで ↑↑↑
 
     # ─── 共通ヘルパ：文字列→date ─────────────────────
     @staticmethod
@@ -39,3 +37,15 @@ class AcceptanceClient:
         rows = await self._to_thread(self.sheet.get_all_records)
         return [r for r in rows
                 if start_d <= self._to_date(r["タイムスタンプ"]) <= end_d]
+
+     # ─── 今日1行だけ取り出す ──────────────────────
+     @retry(wait=wait_fixed(2), stop=stop_after_attempt(3))
+     async def today(self) -> dict | None:
+         """今日の自己受容メモを1行返す（存在しなければ None）"""
+         today_d = date.today()
+         rows = await self._to_thread(self.sheet.get_all_records)
+         # 後ろから検索すると少しだけ速い
+         for r in reversed(rows):
+             if self._to_date(r["タイムスタンプ"]) == today_d:
+                 return r
+         return None
