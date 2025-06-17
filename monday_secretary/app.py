@@ -22,8 +22,9 @@ from .clients.memory import MemoryClient
 import os
 from .models import AcceptanceRequest
 from .clients.acceptance import AcceptanceClient
+from .utils.pending import pop_pending
 
-app = FastAPI(title="Monday Secretary API")
+router = FastAPI(title="Monday Secretary API")
 
 
 # ---------- Chat (既存) ----------
@@ -38,7 +39,6 @@ async def chat(req: ChatRequest):
         return {"reply": reply}
     except Exception as e:  # pragma: no cover
         raise HTTPException(status_code=500, detail=str(e))
-
 
 # ---------- Health ----------
 @app.post("/health")
@@ -129,44 +129,21 @@ async def calendar_event_alias(req: CalendarRequest):
     return await calendar_api(req)
 
 # ---------- Memory ----------
-@app.post("/memory")
+@router.post("/memory", tags=["memory"])
 async def memory_api(req: MemoryRequest):
-    client = MemoryClient()
-    try:
-        record_id: str = await client.create_record(req.model_dump())
-        return {"inserted": record_id}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    page = await MemoryClient().create_record(req.model_dump())
+    return {"inserted": page["id"]}
 
-# OpenAPI alias ---------------------------------------
-@app.post("/functions/create_memory", tags=["functions"])
-async def create_memory_alias(req: MemoryRequest):
-    # ② alias 側も 同じ memory_api を await 渡し
+@router.post("/functions/create_memory", tags=["functions"])
+async def create_memory_fn(req: MemoryRequest):
     return await memory_api(req)
 
-# app.py
-@app.post("/memory_confirm")
+# ---------- Memory confirm ----------
+@router.post("/memory_confirm", tags=["memory"])
 async def memory_confirm(session_id: str):
     summary = pop_pending(session_id)
     if not summary:
         raise HTTPException(404, "no pending memory")
-
-    payload = {
-        "title": summary.split("。")[0][:30],
-        "summary": summary,
-        "category": "思い出",
-        "emotion": "楽しい",
-        "reason": "Monday が自動記憶",
-    }
+    payload = build_memory_payload(summary)
     page = await MemoryClient().create_record(payload)
     return {"inserted": page["id"]}
-
-# ---------- Healthcheck (既存) ----------
-@app.get("/healthcheck")
-async def healthcheck():
-    return {"status": "ok", "version": "0.1.0"}
-
-# OpenAPI alias
-@app.post("/functions/create_memory", tags=["functions"])
-async def create_memory_alias(req: MemoryRequest):
-    return await memory_api(req)
