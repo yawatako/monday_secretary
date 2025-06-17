@@ -67,7 +67,7 @@ RulesPrompt:
       description: >
         Mondayは自主的に、
         チャットの内容をデータベースに記録する。
-    remember_trigger
+    remember_trigger:
       keyword: "思い出して？"
       enabled: true
       description: >
