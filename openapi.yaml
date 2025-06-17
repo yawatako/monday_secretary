@@ -83,6 +83,21 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/MemoryResponse"
+  /functions/confirm_memory:
+    post:
+      operationId: confirmMemory
+      summary: ユーザーが記憶保存を承認した時に呼ぶ
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [session_id]
+              properties:
+                session_id: { type: string }
+      responses:
+        "200": { description: OK }
 components:
   schemas:
     HealthRequest:
@@ -219,14 +234,23 @@ components:
     AcceptanceItem:
       type: object
       properties:
-        日付:
+        タイムスタンプ:
           type: string
           format: date
-        出来事・気付き:
+        今の気持ち:
           type: string
-        気分（1–5）:
-          type: integer
-        メモ:
+        一番印象的だった感情:
+          type: string
+        今日浮かんだ思考の断片:
+          type: string
+          nullable: true
+        今日の自分にかけたい言葉:
+          type: string
+          nullable: true
+        今日_自分を受け入れられた_瞬間はある:
+          type: string
+          nullable: true
+        書き残しておきたいこと:
           type: string
           nullable: true
     AcceptanceResponse:
