@@ -31,7 +31,6 @@ app = FastAPI(title="Monday Secretary API")
 class ChatRequest(BaseModel):
     user_msg: str
 
-
 @app.post("/chat")
 async def chat(req: ChatRequest):
     try:
