@@ -25,9 +25,9 @@ class WorkClient:
         return [r for r in rows if start <= r.get("タイムスタンプ", "") <= end]
 
     async def today(self) -> dict | None:
-    today_d = date.today()
-    rows = await self._to_thread(self.sheet.get_all_records)
-    for r in reversed(rows):
-        if self._to_date(r["タイムスタンプ"]) == today_d:
-            return r
-    return None
+        today_d = date.today()
+        rows = await self._to_thread(self.sheet.get_all_records)
+        for r in reversed(rows):
+            if self._to_date(r["タイムスタンプ"]) == today_d:
+                return r
+        return None
