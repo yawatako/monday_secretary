@@ -1,7 +1,8 @@
 import os
 import asyncio
 from datetime import date, datetime 
-
+import gspread
+from tenacity import retry, wait_fixed, stop_after_attempt
 
 class WorkClient:
     """業務メモ（《業務記録》タブ）を取得"""
