@@ -18,9 +18,9 @@ class WorkRequest(BaseModel):
 
 # ---------- Acceptance（自己受容） ----------
 class AcceptanceRequest(BaseModel):
-    mode: Literal["latest", "period"] = "latest"
+    mode: Literal["latest", "period"]
     start_date: Optional[date] = None
-    end_date:   Optional[date] = None
+    end_date: Optional[date]   = None
 
 class AcceptanceItem(BaseModel):
     タイムスタンプ: date
