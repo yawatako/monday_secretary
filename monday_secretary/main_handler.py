@@ -18,7 +18,7 @@ from .clients import (
 )
 from .utils.brake_checker     import BrakeChecker
 from .utils.memory_suggester  import needs_memory
-from .utils.pending_memory import pop_pending
+from .utils.pending_memory import pop_pending, store_pending
 from .prompts                 import template
 
 load_dotenv()
