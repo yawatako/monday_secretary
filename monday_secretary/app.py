@@ -84,16 +84,20 @@ async def work_alias(req: WorkRequest):
 
 # ---------- Acceptance ----------
 @app.post("/acceptance")
-async def acceptance_alias(req: AcceptanceRequest):
+async def acceptance_api(req: AcceptanceRequest):
+    client = AcceptanceClient()
     try:
-        return await acceptance_api(req)
+        if req.mode == "latest":
+            data = await client.latest()
+        else:
+            data = await client.period(req.start_date, req.end_date)
+        return data
     except Exception as e:
-        import logging, traceback
-        logging.exception("acceptance_api failed – %s", e)
+        logging.exception("acceptance_api failed")
         raise HTTPException(status_code=500, detail=str(e))
 
-# GPTs 用の alias
-@app.post("/functions/get_acceptance_data", tags=["functions"])
+# OpenAPI alias
+@app.post("/functions/get_acceptance_data", tags=["acceptance"])
 async def acceptance_alias(req: AcceptanceRequest):
     return await acceptance_api(req)
 
