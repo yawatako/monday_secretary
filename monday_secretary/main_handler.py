@@ -1,5 +1,5 @@
-import os, yaml, asyncio, datetime as dt, hashlib
-from typing import Dict
+import os, yaml, asyncio, datetime as dt
+from typing import Dict, List
 
 from dotenv import load_dotenv
 
@@ -22,6 +22,7 @@ CFG = yaml.safe_load(open(cfg_path, encoding="utf-8")) if os.path.exists(cfg_pat
 MORNING_KWS = CFG.get("RulesPrompt", {}).get("Triggers", {})\
                  .get("morning_trigger", {}).get("keyword", "").split()
 EVENING_KWS = ["疲れた", "おやすみ", "今日はここまで"]
+REMEMBER_KWS = ["覚えてる？", "思い出して", "あの時の記憶", "過去メモ"]
 
 # セッション ↔ ペンディングメモ
 PENDING: Dict[str, str] = {}
@@ -40,6 +41,25 @@ async def handle_message(user_msg: str, session_id: str = "default") -> str:
 
     context = {}
 
+    # ===== 0) remember_trigger =========================================
+    if any(kw in user_msg for kw in REMEMBER_KWS):
+        # 直近 5 件を時系列降順で取得 → Markdown 整形
+        results: List[dict] = await memory_client.search("")   # ← 空クエリ＝最新順
+        if not results:
+            return "**Monday**：まだ何も記憶がないみたい… 🤔"
+
+        lines = []
+        for pg in results:         # Notion API のレスポンス想定
+            props = pg["properties"]
+            title = props["title"]["title"][0]["plain_text"]
+            created = pg["created_time"][:10]
+            url  = pg["url"]
+            cat  = props["category"]["select"]["name"]
+            lines.append(f"- **{title}**（{created} / {cat}）\n  {url}")
+
+        return "**Monday**：こんなメモがあるよ 📚\n\n" + "\n".join(lines)
+
+    
   # ── morning_trigger ──────────────────────────────────────────
     if any(kw in user_msg for kw in MORNING_KWS):
       today = datetime.date.today().isoformat()
