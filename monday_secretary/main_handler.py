@@ -8,7 +8,8 @@ from .clients import HealthClient, CalendarClient, MemoryClient, WorkClient
 from .utils import BrakeChecker
 from .prompts import template
 
-from utils.memory_suggester import needs_memory, hashlib
+from .utils.memory_suggester import needs_memory
+import hashlib
 
 load_dotenv()
 
