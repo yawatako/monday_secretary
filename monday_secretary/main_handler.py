@@ -91,13 +91,13 @@ async def handle_message(user_msg: str, session_id: str = "default") -> str:
 
   # ──────────── 2) evening_trigger ─────────────── 
     if any(k in user_msg for k in EVENING_KWS):
-    today_acceptance = await acceptance_client.today()
-    work_today       = await work_client.today()   # WorkClient も同様に today() を実装している想定
-    return (
-        "**Monday**：今日もお疲れさま！\n"
-        f"🗒 **業務まとめ**：{work_today.get('今日のまとめ！', '—') if work_today else '（記録なし）'}\n"
-        f"💬 **自己受容**：{today_acceptance.get('今の気持ち', '—') if today_acceptance else '（記録なし）'}"
-    )
+        today_acceptance = await acceptance_client.today()
+        work_today       = await work_client.today()   # WorkClient も同様に today() を実装している想定
+        return (
+            "**Monday**：今日もお疲れさま！\n"
+            f"🗒 **業務まとめ**：{work_today.get('今日のまとめ！', '—') if work_today else '（記録なし）'}\n"
+            f"💬 **自己受容**：{today_acceptance.get('今の気持ち', '—') if today_acceptance else '（記録なし）'}"
+        )
 
     # ──────────── 3) Memory Trigger ────────────────
     should_mem, digest, summary = needs_memory(user_msg, "")
