@@ -1,5 +1,3 @@
-main_handler.py
-
 import os, yaml, asyncio, datetime as dt, hashlib
 from typing import Dict
 
