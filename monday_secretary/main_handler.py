@@ -91,30 +91,13 @@ async def handle_message(user_msg: str, session_id: str = "default") -> str:
 
   # ──────────── 2) evening_trigger ─────────────── 
     if any(k in user_msg for k in EVENING_KWS):
-      today = datetime.date.today().isoformat()   # 例: "2025-06-18"
-
-      # きょう分だけ抽出（records が空ならまだ未入力と判定）
-      work_today, acc_today = await asyncio.gather(
-          work_client.period(today, today),
-          acceptance_client.period(today, today)
-      )
-      work_today   = work_today[-1]   if work_today   else {}
-      acc_today    = acc_today[-1]    if acc_today    else {}
-
-      if not work_today and not acc_today:
-          return ("**Monday**：まだ今日の業務メモ／自己受容メモが\n"
-                  "入力されてないね。お休みだったっけ？")
-
-      # ─ まとめる ─────────────────────────
-      work_sum = work_today.get("今日のまとめ！", "—")
-      feel_now = acc_today.get("今の気持ち", "—")
-
-      return (
-          "**Monday**：今日の振り返りタイム！\n\n"
-          f"🗒 **業務まとめ**：{work_sum}\n"
-          f"💬 **自己受容メモ**：{feel_now}\n\n"
-          "きょうの自分に◎をあげよう。よく頑張ったね！"
-      )
+    today_acceptance = await acceptance_client.today()
+    work_today       = await work_client.today()   # WorkClient も同様に today() を実装している想定
+    return (
+        "**Monday**：今日もお疲れさま！\n"
+        f"🗒 **業務まとめ**：{work_today.get('今日のまとめ！', '—') if work_today else '（記録なし）'}\n"
+        f"💬 **自己受容**：{today_acceptance.get('今の気持ち', '—') if today_acceptance else '（記録なし）'}"
+    )
 
     # ──────────── 3) Memory Trigger ────────────────
     should_mem, digest, summary = needs_memory(user_msg, "")
