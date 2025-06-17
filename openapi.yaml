@@ -1,14 +1,10 @@
 openapi: 3.1.0
-
 info:
   title: Monday Secretary API
-  version: "1.0.0"
-
+  version: 1.0.0
 servers:
   - url: https://health-api-server.onrender.com
-
 paths:
-
   /functions/get_health_data:
     post:
       operationId: getHealthData
@@ -18,15 +14,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/HealthRequest'
+              $ref: "#/components/schemas/HealthRequest"
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HealthResponse'
-
+                $ref: "#/components/schemas/HealthResponse"
   /functions/get_work_data:
     post:
       operationId: getWorkData
@@ -36,15 +31,24 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/GetWorkDataRequest'
+              $ref: "#/components/schemas/GetWorkDataRequest"
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WorkDataResponse'
-
+                $ref: "#/components/schemas/WorkDataResponse"
+  /functions/get_acceptance_data:
+      post:
+        operationId: getAcceptanceData
+        summary: 自己受容メモを取得
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AcceptanceRequest"
   /functions/calendar_event:
     post:
       operationId: calendarEvent
@@ -54,15 +58,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CalendarRequest'
+              $ref: "#/components/schemas/CalendarRequest"
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CalendarResponse'
-
+                $ref: "#/components/schemas/CalendarResponse"
   /functions/create_memory:
     post:
       operationId: createMemory
@@ -72,25 +75,28 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/MemoryRequest'
+              $ref: "#/components/schemas/MemoryRequest"
       responses:
-        '200':
+        "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/MemoryResponse'
-
+                $ref: "#/components/schemas/MemoryResponse"
 components:
   schemas:
-
-    # ---------- Health ----------
     HealthRequest:
       type: object
+      required:
+        - mode
       properties:
         mode:
           type: string
-          enum: [latest, compare, period, dailySummary]
+          enum:
+            - latest
+            - compare
+            - period
+            - dailySummary
           default: latest
         sheet_url:
           type: string
@@ -103,7 +109,6 @@ components:
           type: string
           format: date
           nullable: true
-
     HealthResponse:
       type: object
       properties:
@@ -113,8 +118,7 @@ components:
         data:
           type: array
           items:
-            $ref: '#/components/schemas/HealthItem'
-
+            $ref: "#/components/schemas/HealthItem"
     HealthItem:
       type: object
       properties:
@@ -137,15 +141,16 @@ components:
         memo:
           type: string
           nullable: true
-
-    # ---------- Work ----------
     GetWorkDataRequest:
       type: object
-      required: [mode]
+      required:
+        - mode
       properties:
         mode:
           type: string
-          enum: [latest, period]
+          enum:
+            - latest
+            - period
         start_date:
           type: string
           format: date
@@ -154,7 +159,6 @@ components:
           type: string
           format: date
           nullable: true
-
     WorkDataResponse:
       type: object
       properties:
@@ -164,8 +168,7 @@ components:
         data:
           type: array
           items:
-            $ref: '#/components/schemas/WorkItem'
-
+            $ref: "#/components/schemas/WorkItem"
     WorkItem:
       type: object
       properties:
@@ -197,15 +200,57 @@ components:
         daily_summary:
           type: string
           nullable: true
-
-    # ---------- Calendar ----------
+    AcceptanceRequest:
+      type: object
+      required: [mode]
+      properties:
+        mode:
+          type: string
+          enum: [latest, period]
+          default: latest
+        start_date:
+          type: string
+          format: date
+          nullable: true
+        end_date:
+          type: string
+          format: date
+          nullable: true
+    AcceptanceItem:
+      type: object
+      properties:
+        日付:
+          type: string
+          format: date
+        出来事・気付き:
+          type: string
+        気分（1–5）:
+          type: integer
+        メモ:
+          type: string
+          nullable: true
+    AcceptanceResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: success
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/AcceptanceItem"
     CalendarRequest:
       type: object
-      required: [action]
+      required:
+        - action
       properties:
         action:
           type: string
-          enum: [insert, get, update, delete]
+          enum:
+            - insert
+            - get
+            - update
+            - delete
         calendar_id:
           type: string
           nullable: true
@@ -223,7 +268,6 @@ components:
         event_id:
           type: string
           nullable: true
-
     CalendarResponse:
       type: object
       properties:
@@ -231,8 +275,7 @@ components:
           type: string
           example: success
         event:
-          $ref: '#/components/schemas/CalendarEvent'
-
+          $ref: "#/components/schemas/CalendarEvent"
     CalendarEvent:
       type: object
       properties:
@@ -248,11 +291,14 @@ components:
         end:
           type: string
           format: date-time
-
-    # ---------- Memory ----------
     MemoryRequest:
       type: object
-      required: [title, summary, category, emotion, reason]
+      required:
+        - title
+        - summary
+        - category
+        - emotion
+        - reason
       properties:
         title:
           type: string
@@ -272,14 +318,19 @@ components:
             - その他
         emotion:
           type: string
-          enum: [嬉しい, 悲しい, 怒り, 楽しい, 悔しい, 辛い]
+          enum:
+            - 嬉しい
+            - 悲しい
+            - 怒り
+            - 楽しい
+            - 悔しい
+            - 辛い
         reason:
           type: string
         timestamp:
           type: string
           format: date-time
           nullable: true
-
     MemoryResponse:
       type: object
       properties:
@@ -287,8 +338,7 @@ components:
           type: string
           example: success
         saved_memory:
-          $ref: '#/components/schemas/SavedMemory'
-
+          $ref: "#/components/schemas/SavedMemory"
     SavedMemory:
       type: object
       properties:
