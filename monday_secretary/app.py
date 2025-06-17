@@ -144,6 +144,23 @@ async def create_memory_alias(req: MemoryRequest):
     # ② alias 側も 同じ memory_api を await 渡し
     return await memory_api(req)
 
+# app.py
+@app.post("/memory_confirm")
+async def memory_confirm(session_id: str):
+    summary = pop_pending(session_id)
+    if not summary:
+        raise HTTPException(404, "no pending memory")
+
+    payload = {
+        "title": summary.split("。")[0][:30],
+        "summary": summary,
+        "category": "思い出",
+        "emotion": "楽しい",
+        "reason": "Monday が自動記憶",
+    }
+    page = await MemoryClient().create_record(payload)
+    return {"inserted": page["id"]}
+
 # ---------- Healthcheck (既存) ----------
 @app.get("/healthcheck")
 async def healthcheck():
