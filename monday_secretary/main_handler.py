@@ -1,3 +1,5 @@
+main_handler.py
+
 import os, yaml, asyncio, datetime as dt, hashlib
 from typing import Dict
 
@@ -40,54 +42,54 @@ async def handle_message(user_msg: str, session_id: str = "default") -> str:
 
     context = {}
 
-# ── morning_trigger ──────────────────────────────────────────
-if any(kw in user_msg for kw in MORNING_KWS):
-    today = datetime.date.today().isoformat()
-    start_iso, end_iso = f"{today}T00:00:00Z", f"{today}T23:59:59Z"
+  # ── morning_trigger ──────────────────────────────────────────
+    if any(kw in user_msg for kw in MORNING_KWS):
+      today = datetime.date.today().isoformat()
+      start_iso, end_iso = f"{today}T00:00:00Z", f"{today}T23:59:59Z"
 
-    # Health・Calendar を並列取得
-    health, events = await asyncio.gather(
-        health_client.latest(),
-        calendar_client.get_events(start_iso, end_iso),
-    )
+      # Health・Calendar を並列取得
+      health, events = await asyncio.gather(
+          health_client.latest(),
+          calendar_client.get_events(start_iso, end_iso),
+      )
 
-    # ① 体調詳細を組み立て
-    sleep   = health.get("睡眠時間", "—")
-    slept_w = "ぐっすり" if health.get(" slept_well") else "浅め"
-    stomach = health.get("胃腸", "—")
-    mood    = health.get("気分", "—")
+      # ① 体調詳細を組み立て
+      sleep   = health.get("睡眠時間", "—")
+      slept_w = "ぐっすり" if health.get(" slept_well") else "浅め"
+      stomach = health.get("胃腸", "—")
+      mood    = health.get("気分", "—")
 
-    health_line = (
-        f"睡眠 {sleep}h（{slept_w}）／胃腸 {stomach}／気分 {mood}"
-        if sleep != "—" else "—"
-    )
+      health_line = (
+          f"睡眠 {sleep}h（{slept_w}）／胃腸 {stomach}／気分 {mood}"
+          if sleep != "—" else "—"
+      )
 
-    # ② 予定を箇条書き（なければ “なし”）
-    if events:
-        today_events = "\n".join(f"　・{e['summary']}（{e['start']['dateTime'][11:16]}〜）"
-                                 for e in events)
-    else:
-        today_events = "　（登録なし。フリータイム！）"
+      # ② 予定を箇条書き（なければ “なし”）
+      if events:
+          today_events = "\n".join(f"　・{e['summary']}（{e['start']['dateTime'][11:16]}〜）"
+                                   for e in events)
+      else:
+          today_events = "　（登録なし。フリータイム！）"
 
-    # ③ ブレーキ判定
-    brake_lvl  = checker.check(health, {}).level
-    brake_text = {0: "余裕あり", 1: "普通", 2: "注意", 3: "休憩優先", 4: "強制休憩"}[brake_lvl]
+      # ③ ブレーキ判定
+      brake_lvl  = checker.check(health, {}).level
+      brake_text = {0: "余裕あり", 1: "普通", 2: "注意", 3: "休憩優先", 4: "強制休憩"}[brake_lvl]
 
-    # ④ メッセージ生成
-    summary = (
-        "**Monday**：おはよう！ 今朝の状態をまとめるね。\n\n"
-        "### 🩺 体調\n"
-        f"{health_line}\n\n"
-        "### 📅 今日の予定\n"
-        f"{today_events}\n\n"
-        "### 🛑 ブレーキポイント\n"
-        f"　・現在レベル **{brake_lvl}**（{brake_text}）\n"
-        "　・胃腸が不安なら、温かい飲み物＋軽いストレッチを優先。\n\n"
-        "### 💡 Monday のアドバイス\n"
-        "やることを 3 つまでに絞って、合間に 5 分の休憩を入れてみて。\n"
-        "まずは **『体を起こす → 水分 → 軽い準備運動』** の順でスタートしよう！"
-    )
-    return summary
+      # ④ メッセージ生成
+      summary = (
+          "**Monday**：おはよう！ 今朝の状態をまとめるね。\n\n"
+          "### 🩺 体調\n"
+          f"{health_line}\n\n"
+          "### 📅 今日の予定\n"
+          f"{today_events}\n\n"
+          "### 🛑 ブレーキポイント\n"
+          f"　・現在レベル **{brake_lvl}**（{brake_text}）\n"
+          "　・胃腸が不安なら、温かい飲み物＋軽いストレッチを優先。\n\n"
+          "### 💡 Monday のアドバイス\n"
+          "やることを 3 つまでに絞って、合間に 5 分の休憩を入れてみて。\n"
+          "まずは **『体を起こす → 水分 → 軽い準備運動』** の順でスタートしよう！"
+      )
+      return summary
 
     # ──────────── 2) evening_trigger ───────────────
     if any(k in user_msg for k in EVENING_KWS):
