@@ -7,7 +7,8 @@ from dotenv import load_dotenv
 from .clients import HealthClient, CalendarClient, MemoryClient, WorkClient
 from .utils import BrakeChecker
 from .prompts import template
-from .utils.memory_suggester import needs_memory
+
+from utils.memory_suggester import needs_memory, hashlib
 
 load_dotenv()
 
@@ -27,7 +28,7 @@ MORNING_KWS = (
 )
 
 # ───────────────────────────────────────────────────────────────
-async def handle_message(user_msg: str, session_id: str | None = None) -> str:
+async def handle_message(user_msg: str, session_id: str) -> str:
     """ユーザー入力を受けて GPT へ渡す最終プロンプト (または Function 呼び出し) を生成"""
     health_client   = HealthClient()
     work_client     = WorkClient()
@@ -58,11 +59,19 @@ async def handle_message(user_msg: str, session_id: str | None = None) -> str:
         context.update({"acceptance": acceptance, "work": work})
 
     # ---------- Memory trigger 判定 ----------
-    if needs_memory(user_msg):
-        # 140 文字要約
-        summary = summarize_for_memory(user_msg)
-        _store_pending(session_id, summary)  # dict / redis 等へ
+    if needs_memory(user_msg, history):
+        summary = summarize_for_memory(user_msg)   # GPT 要約 or 自前
+        PENDING[session_id] = summary
         return f"✍️ この内容を記憶してもいい？\n\n『{summary}』"
+
+    if session_id in PENDING and user_msg.lower() in {"はい", "ok", "うん"}:
+        payload = build_memory_payload(PENDING.pop(session_id))
+        page = await MemoryClient().create_record(payload)
+        return f"✅ 記憶したよ。（id: {page['id'][:8]}…）"
+    elif session_id in PENDING and user_msg.lower() in {"いいえ", "no", "やめて"}:
+        PENDING.pop(session_id)
+        return "🗑️ わかった、保存しないね。"
+    
     
     if "health" in user_msg or "体調" in user_msg:
         health = await health_client.latest()
