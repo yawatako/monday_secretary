@@ -23,6 +23,7 @@ import os
 from .clients.acceptance import AcceptanceClient
 from .models import AcceptanceRequest 
 from .utils.pending_memory import pop_pending
+import logging
 
 app = FastAPI(title="Monday Secretary API")
 
