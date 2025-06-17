@@ -24,8 +24,7 @@ from .models import AcceptanceRequest
 from .clients.acceptance import AcceptanceClient
 from .utils.pending_memory import pop_pending
 
-router = FastAPI(title="Monday Secretary API")
-
+app = FastAPI(title="Monday Secretary API")
 
 # ---------- Chat (既存) ----------
 class ChatRequest(BaseModel):
