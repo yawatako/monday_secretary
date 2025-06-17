@@ -159,3 +159,12 @@ async def memory_api(req: MemoryRequest):
     payload = build_memory_payload(summary)
     page = await MemoryClient().create_record(payload)
     return {"inserted": page["id"]}
+
+@app.post("/functions/get_memory", tags=["functions"])
+async def get_memory_alias(req: MemorySearchRequest):
+    try:
+        result = await MemoryClient().search(req.query, req.top_k)
+        return {"status": "success", "data": result}
+    except Exception as e:
+        logging.exception("memory_search failed:")
+        raise HTTPException(status_code=500, detail=str(e))
