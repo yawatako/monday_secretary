@@ -73,9 +73,17 @@ async def get_health_data_alias(req: HealthRequest):
 async def work_api(req: WorkRequest):
     client = WorkClient()
     try:
-        data = await client.latest() if req.mode == "latest" \
-               else await client.period(req.start_date, req.end_date)
-        return data
+        if req.mode == "latest":
+            data = await client.latest()
+
+        elif req.mode == "today":
+            data = await client.today()
+
+        else:  # "period"
+            data = await client.period(req.start_date, req.end_date)
+
+        return data or {"status": "ok", "message": "該当データなし"}
+
     except Exception as e:
         logging.error("work_api failed:\n%s", traceback.format_exc())
         raise HTTPException(status_code=500, detail="internal error")
