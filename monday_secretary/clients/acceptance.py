@@ -1,5 +1,6 @@
 import os, asyncio, gspread
 from tenacity import retry, wait_fixed, stop_after_attempt
+from datetime import date
 
 class AcceptanceClient:
     def __init__(self):
@@ -19,6 +20,9 @@ class AcceptanceClient:
         return rows[-1] if rows else {}
 
     @retry(wait=wait_fixed(2), stop=stop_after_attempt(3))
-    async def period(self, start: str, end: str) -> list[dict]:
-        rows = await self._rows()
-        return [r for r in rows if start <= r["タイムスタンプ"] <= end]
+    async def period(self, start: date | str, end: date | str) -> list[dict]:
+        start_str = str(start) if isinstance(start, date) else start
+        end_str   = str(end)   if isinstance(end,   date) else end
+        
+        rows = await self._to_thread(self.sheet.get_all_records)
+        return [r for r in rows if start_str <= r["タイムスタンプ"] <= end_str]
