@@ -128,12 +128,12 @@ async def calendar_event_alias(req: CalendarRequest):
     return await calendar_api(req)
 
 # ---------- Memory ----------
-@router.post("/memory", tags=["memory"])
+@app.post("/memory", tags=["memory"])
 async def memory_api(req: MemoryRequest):
     page = await MemoryClient().create_record(req.model_dump())
     return {"inserted": page["id"]}
 
-@router.post("/functions/create_memory", tags=["functions"])
+@app.post("/functions/create_memory", tags=["functions"])
 async def create_memory_fn(req: MemoryRequest):
     return await memory_api(req)
 
