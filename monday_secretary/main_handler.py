@@ -50,9 +50,11 @@ async def handle_message(user_msg: str) -> str:
         )
         return summary
 
-    # ── 2) 通常フロー (キーワードルーティング) ────────────────
-    context: dict[str, any] = {}
-    health: dict = {}
+# ── 1) evening_trigger か判定 ────────────────────────
+if any(k in user_msg for k in ["疲れた", "おやすみ", "今日はここまで"]):
+    acceptance = await acceptance_client.latest()
+    work       = await work_client.latest()
+    context.update({"acceptance": acceptance, "work": work})
 
     if "health" in user_msg or "体調" in user_msg:
         health = await health_client.latest()
