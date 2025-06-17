@@ -24,6 +24,8 @@ from .clients.acceptance import AcceptanceClient
 from .models import AcceptanceRequest 
 from .utils.pending_memory import pop_pending
 import logging
+import logging
+import traceback
 
 app = FastAPI(title="Monday Secretary API")
 
@@ -75,7 +77,8 @@ async def work_api(req: WorkRequest):
                else await client.period(req.start_date, req.end_date)
         return data
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logging.error("work_api failed:\n%s", traceback.format_exc())
+        raise HTTPException(status_code=500, detail="internal error")
 
 
 @app.post("/functions/get_work_data", tags=["functions"])
