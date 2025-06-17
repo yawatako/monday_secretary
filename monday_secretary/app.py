@@ -20,8 +20,8 @@ from .models import WorkRequest
 from .clients.calendar import CalendarClient
 from .clients.memory import MemoryClient
 import os
-from .clients.acceptance import AcceptanceClient
 from .models import AcceptanceRequest
+from .clients.acceptance import AcceptanceClient
 
 app = FastAPI(title="Monday Secretary API")
 
@@ -89,12 +89,12 @@ async def acceptance_api(req: AcceptanceRequest):
     client = AcceptanceClient()
     try:
         data = await client.latest() if req.mode == "latest" \
-            else await client.period(req.start_date, req.end_date)
+               else await client.period(req.start_date, req.end_date)
         return data
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# GPTs 用エイリアス
+# GPTs 用の alias
 @app.post("/functions/get_acceptance_data", tags=["functions"])
 async def acceptance_alias(req: AcceptanceRequest):
     return await acceptance_api(req)
