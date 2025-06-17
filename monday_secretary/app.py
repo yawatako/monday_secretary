@@ -22,7 +22,7 @@ from .clients.memory import MemoryClient
 import os
 from .models import AcceptanceRequest
 from .clients.acceptance import AcceptanceClient
-from .utils.pending import pop_pending
+from .utils.pending_memory import pop_pending
 
 router = FastAPI(title="Monday Secretary API")
 
