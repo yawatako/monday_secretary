@@ -11,6 +11,9 @@ from .prompts import template
 from .utils.memory_suggester import needs_memory
 import hashlib
 
+from monday_secretary.utils import needs_memory
+from monday_secretary.utils.pending_memory import pop_pending, store_pending
+
 load_dotenv()
 
 # ───────────────────────────────────────────────────────────────
