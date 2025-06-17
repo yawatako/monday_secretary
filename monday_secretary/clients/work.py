@@ -20,14 +20,27 @@ class WorkClient:
         return rows[-1] if rows else {}
 
     @retry(wait=wait_fixed(2), stop=stop_after_attempt(3))
-    async def period(self, start: str, end: str) -> list[dict]:
-        rows = await self._to_thread(self.sheet.get_all_records)
-        return [r for r in rows if start <= r.get("タイムスタンプ", "") <= end]
+    async def period(
+        self,
+        start: date | str | None,
+        end:   date | str | None
+    ) -> list[dict]:
 
-    async def today(self) -> dict | None:
-        today_d = date.today()
+        # --- デフォルト値を今日にする -------------------------
+        today = date.today()
+        start_d = (
+            today if start is None
+            else start if isinstance(start, date)
+            else self._to_date(start)
+        )
+        end_d = (
+            today if end is None
+            else end if isinstance(end, date)
+            else self._to_date(end)
+        )
+
         rows = await self._to_thread(self.sheet.get_all_records)
-        for r in reversed(rows):
-            if self._to_date(r["タイムスタンプ"]) == today_d:
-                return r
-        return None
+        return [
+            r for r in rows
+            if start_d <= self._to_date(r["タイムスタンプ"]) <= end_d
+        ]
