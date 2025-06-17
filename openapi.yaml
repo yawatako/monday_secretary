@@ -4,11 +4,14 @@ info:
   version: 1.0.0
 servers:
   - url: https://health-api-server.onrender.com
+
 paths:
+  # ─── Health ─────────────────────────────
   /functions/get_health_data:
     post:
       operationId: getHealthData
       summary: 体調データを取得
+      tags: [Health]
       requestBody:
         required: true
         content:
@@ -22,10 +25,13 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthResponse"
+
+  # ─── Work ───────────────────────────────
   /functions/get_work_data:
     post:
       operationId: getWorkData
       summary: 業務メモを取得
+      tags: [Work]
       requestBody:
         required: true
         content:
@@ -39,20 +45,33 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/WorkDataResponse"
+
+  # ─── Acceptance ─────────────────────────
   /functions/get_acceptance_data:
-      post:
-        operationId: getAcceptanceData
-        summary: 自己受容メモを取得
-        requestBody:
-          required: true
+    post:
+      operationId: getAcceptanceData
+      summary: 自己受容メモを取得
+      tags: [Acceptance]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AcceptanceRequest"
+      responses:
+        "200":
+          description: OK
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AcceptanceRequest"
+                $ref: "#/components/schemas/AcceptanceResponse"
+
+  # ─── Calendar ───────────────────────────
   /functions/calendar_event:
     post:
       operationId: calendarEvent
       summary: カレンダー操作
+      tags: [Calendar]
       requestBody:
         required: true
         content:
@@ -66,155 +85,79 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/CalendarResponse"
-  /functions/create_memory:
-    post:
-      operationId: createMemory
-      summary: Notion にメモを保存
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/MemoryRequest"
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/MemoryResponse"
-  /functions/confirm_memory:
-    post:
-      operationId: confirmMemory
-      summary: ユーザーが記憶保存を承認した時に呼ぶ
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [session_id]
-              properties:
-                session_id: { type: string }
-      responses:
-        "200": { description: OK }
+
 components:
   schemas:
+    # ---------- Health ----------
     HealthRequest:
       type: object
-      required:
-        - mode
+      required: [mode]
       properties:
         mode:
           type: string
-          enum:
-            - latest
-            - compare
-            - period
-            - dailySummary
+          enum: [latest, compare, period, dailySummary]
           default: latest
-        sheet_url:
-          type: string
-          nullable: true
-        start_date:
-          type: string
-          format: date
-          nullable: true
-        end_date:
-          type: string
-          format: date
-          nullable: true
+        sheet_url: { type: string, nullable: true }
+        start_date: { type: string, format: date, nullable: true }
+        end_date:   { type: string, format: date, nullable: true }
+
+    HealthItem:
+      type: object
+      properties:
+        timestamp:   { type: string, format: date-time }
+        sleep_hours: { type: number }
+        slept_well:  { type: boolean }
+        weight:      { type: number, nullable: true }
+        energy:      { type: string, nullable: true }
+        mood:        { type: string, nullable: true }
+        memo:        { type: string, nullable: true }
+
     HealthResponse:
       type: object
       properties:
-        status:
-          type: string
-          example: success
+        status: { type: string, example: "success" }
         data:
           type: array
           items:
             $ref: "#/components/schemas/HealthItem"
-    HealthItem:
-      type: object
-      properties:
-        timestamp:
-          type: string
-          format: date-time
-        sleep_hours:
-          type: number
-        slept_well:
-          type: boolean
-        weight:
-          type: number
-          nullable: true
-        energy:
-          type: string
-          nullable: true
-        mood:
-          type: string
-          nullable: true
-        memo:
-          type: string
-          nullable: true
+
+    # ---------- Work ----------
     GetWorkDataRequest:
       type: object
-      required:
-        - mode
+      required: [mode]
       properties:
         mode:
           type: string
-          enum:
-            - latest
-            - period
-        start_date:
-          type: string
-          format: date
-          nullable: true
-        end_date:
-          type: string
-          format: date
-          nullable: true
+          enum: [latest, period]
+        start_date: { type: string, format: date, nullable: true }
+        end_date:   { type: string, format: date, nullable: true }
+
+    WorkItem:
+      type: object
+      properties:
+        timestamp:           { type: string, format: date-time }
+        box_setup_9am:       { type: boolean }
+        tasks_after_10am:    { type: string }
+        rest_minutes_am:     { type: number }
+        fatigue_level_am:    { type: string }
+        comment_am:          { type: string, nullable: true }
+        box_collected_3pm:   { type: boolean }
+        tasks_pm:            { type: string }
+        rest_minutes_pm:     { type: number }
+        fatigue_level_pm:    { type: string }
+        comment_pm:          { type: string, nullable: true }
+        daily_summary:       { type: string, nullable: true }
+
     WorkDataResponse:
       type: object
       properties:
-        status:
-          type: string
-          example: success
+        status: { type: string, example: "success" }
         data:
           type: array
           items:
             $ref: "#/components/schemas/WorkItem"
-    WorkItem:
-      type: object
-      properties:
-        timestamp:
-          type: string
-          format: date-time
-        box_setup_9am:
-          type: boolean
-        tasks_after_10am:
-          type: string
-        rest_minutes_am:
-          type: number
-        fatigue_level_am:
-          type: string
-        comment_am:
-          type: string
-          nullable: true
-        box_collected_3pm:
-          type: boolean
-        tasks_pm:
-          type: string
-        rest_minutes_pm:
-          type: number
-        fatigue_level_pm:
-          type: string
-        comment_pm:
-          type: string
-          nullable: true
-        daily_summary:
-          type: string
-          nullable: true
+
+    # ---------- Acceptance ----------
     AcceptanceRequest:
       type: object
       required: [mode]
@@ -223,161 +166,74 @@ components:
           type: string
           enum: [latest, period]
           default: latest
-        start_date:
-          type: string
-          format: date
-          nullable: true
-        end_date:
-          type: string
-          format: date
-          nullable: true
+        start_date: { type: string, format: date, nullable: true }
+        end_date:   { type: string, format: date, nullable: true }
+
     AcceptanceItem:
       type: object
       properties:
-        タイムスタンプ:
+        timestamp:
           type: string
           format: date
-        今の気持ち:
+          description: タイムスタンプ
+        currentFeeling:
           type: string
-        一番印象的だった感情:
+          description: 今の気持ち
+        mostImpressiveEmotion:
           type: string
-        今日浮かんだ思考の断片:
-          type: string
-          nullable: true
-        今日の自分にかけたい言葉:
-          type: string
-          nullable: true
-        今日_自分を受け入れられた_瞬間はある:
+          description: 一番印象的だった感情
+        thoughtFragments:
           type: string
           nullable: true
-        書き残しておきたいこと:
+          description: 今日浮かんだ思考の断片
+        wordsToMyself:
           type: string
           nullable: true
+          description: 今日の自分にかけたい言葉
+        acceptedMoment:
+          type: string
+          nullable: true
+          description: 今日、自分を受け入れられた瞬間はある
+        notes:
+          type: string
+          nullable: true
+          description: 書き残しておきたいこと
+
     AcceptanceResponse:
       type: object
       properties:
-        status:
-          type: string
-          example: success
+        status: { type: string, example: "success" }
         data:
           type: array
           items:
             $ref: "#/components/schemas/AcceptanceItem"
+
+    # ---------- Calendar ----------
     CalendarRequest:
       type: object
-      required:
-        - action
+      required: [action]
       properties:
         action:
           type: string
-          enum:
-            - insert
-            - get
-            - update
-            - delete
-        calendar_id:
-          type: string
-          nullable: true
-        summary:
-          type: string
-          nullable: true
-        start:
-          type: string
-          format: date-time
-          nullable: true
-        end:
-          type: string
-          format: date-time
-          nullable: true
-        event_id:
-          type: string
-          nullable: true
-    CalendarResponse:
-      type: object
-      properties:
-        status:
-          type: string
-          example: success
-        event:
-          $ref: "#/components/schemas/CalendarEvent"
+          enum: [insert, get, update, delete]
+        calendar_id: { type: string, nullable: true }
+        summary:     { type: string, nullable: true }
+        start:       { type: string, format: date-time, nullable: true }
+        end:         { type: string, format: date-time, nullable: true }
+        event_id:    { type: string, nullable: true }
+
     CalendarEvent:
       type: object
       properties:
-        id:
-          type: string
-        summary:
-          type: string
-        calendar_id:
-          type: string
-        start:
-          type: string
-          format: date-time
-        end:
-          type: string
-          format: date-time
-    MemoryRequest:
-      type: object
-      required:
-        - title
-        - summary
-        - category
-        - emotion
-        - reason
-      properties:
-        title:
-          type: string
-        summary:
-          type: string
-        category:
-          type: string
-          enum:
-            - スケジュール
-            - 創作
-            - 体調
-            - 仕事
-            - 遊び
-            - 思い出
-            - 感情
-            - 思考
-            - その他
-        emotion:
-          type: string
-          enum:
-            - 嬉しい
-            - 悲しい
-            - 怒り
-            - 楽しい
-            - 悔しい
-            - 辛い
-        reason:
-          type: string
-        timestamp:
-          type: string
-          format: date-time
-          nullable: true
-    MemoryResponse:
+        id:          { type: string }
+        summary:     { type: string }
+        calendar_id: { type: string }
+        start:       { type: string, format: date-time }
+        end:         { type: string, format: date-time }
+
+    CalendarResponse:
       type: object
       properties:
-        status:
-          type: string
-          example: success
-        saved_memory:
-          $ref: "#/components/schemas/SavedMemory"
-    SavedMemory:
-      type: object
-      properties:
-        id:
-          type: string
-        title:
-          type: string
-        summary:
-          type: string
-        category:
-          type: string
-        emotion:
-          type: string
-        reason:
-          type: string
-        timestamp:
-          type: string
-          format: date-time
+        status: { type: string, example: "success" }
+        event:
+          $ref: "#/components/schemas/CalendarEvent"
