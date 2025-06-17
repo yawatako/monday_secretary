@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 from .clients import HealthClient, CalendarClient, MemoryClient, WorkClient
 from .utils import BrakeChecker
 from .prompts import template
+from .utils.memory_suggester import needs_memory
 
 load_dotenv()
 
@@ -26,7 +27,7 @@ MORNING_KWS = (
 )
 
 # ───────────────────────────────────────────────────────────────
-async def handle_message(user_msg: str) -> str:
+async def handle_message(user_msg: str, session_id: str | None = None) -> str:
     """ユーザー入力を受けて GPT へ渡す最終プロンプト (または Function 呼び出し) を生成"""
     health_client   = HealthClient()
     work_client     = WorkClient()
@@ -50,12 +51,19 @@ async def handle_message(user_msg: str) -> str:
         )
         return summary
 
-# ── 1) evening_trigger か判定 ────────────────────────
-if any(k in user_msg for k in ["疲れた", "おやすみ", "今日はここまで"]):
-    acceptance = await acceptance_client.latest()
-    work       = await work_client.latest()
-    context.update({"acceptance": acceptance, "work": work})
+    # ── 1) evening_trigger か判定 ────────────────────────
+    if any(k in user_msg for k in ["疲れた", "おやすみ", "今日はここまで"]):
+        acceptance = await acceptance_client.latest()
+        work       = await work_client.latest()
+        context.update({"acceptance": acceptance, "work": work})
 
+    # ---------- Memory trigger 判定 ----------
+    if needs_memory(user_msg):
+        # 140 文字要約
+        summary = summarize_for_memory(user_msg)
+        _store_pending(session_id, summary)  # dict / redis 等へ
+        return f"✍️ この内容を記憶してもいい？\n\n『{summary}』"
+    
     if "health" in user_msg or "体調" in user_msg:
         health = await health_client.latest()
         context["health"] = health
