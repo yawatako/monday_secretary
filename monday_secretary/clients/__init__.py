@@ -11,5 +11,5 @@ __all__ = [
     "CalendarClient",
     "MemoryClient",
     "WorkClient",
-    "AcceptanceClient",
+    "AcceptanceClient", 
 ]
