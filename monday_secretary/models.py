@@ -1,11 +1,6 @@
-# monday_secretary/models.py  修正版
-from datetime import datetime, date
-from typing import Optional, Literal
-from pydantic import BaseModel, Field
-from typing import Optional, Literal
-from datetime import date
-from typing import Optional
 from datetime import date, datetime
+from typing import Optional, Literal
+
 from pydantic import BaseModel, Field
 
 # ---------- 体調 ----------
@@ -22,8 +17,12 @@ class WorkRequest(BaseModel):
     end_date:   Optional[date] = None
 
 # ---------- Acceptance（自己受容） ----------
+class AcceptanceRequest(BaseModel):
+    mode: Literal["latest", "period"] = "latest"
+    start_date: Optional[date] = None
+    end_date:   Optional[date] = None
+
 class AcceptanceItem(BaseModel):
-    """シート『自己受容』1行分をそのまま表す"""
     タイムスタンプ: date
     今の気持ち: str
     一番印象的だった感情: str
@@ -31,12 +30,6 @@ class AcceptanceItem(BaseModel):
     今日の自分にかけたい言葉: Optional[str] = None
     今日_自分を受け入れられた_瞬間はある: Optional[str] = None
     書き残しておきたいこと: Optional[str] = None
-
-class AcceptanceRequest(BaseModel):
-    """/acceptance エンドポイントへのリクエスト"""
-    mode: Literal["latest", "period"]
-    start_date: Optional[date] = None
-    end_date: Optional[date] = None
 
 # ---------- カレンダー ----------
 class CalendarRequest(BaseModel):
@@ -52,9 +45,8 @@ class MemoryRequest(BaseModel):
     title: str
     summary: str
     category: Literal[
-        "スケジュール", "創作", "体調", "仕事", "遊び",
-        "思い出", "感情", "思考", "その他"
+        "スケジュール","創作","体調","仕事","遊び","思い出","感情","思考","その他"
     ]
-    emotion: Literal["嬉しい", "悲しい", "怒り", "楽しい", "悔しい", "辛い"]
+    emotion: Literal["嬉しい","悲しい","怒り","楽しい","悔しい","辛い"]
     reason: str
-    timestamp: Optional[datetime] = Field(default_factory=datetime.now)
+    timestamp: datetime = Field(default_factory=datetime.now)
