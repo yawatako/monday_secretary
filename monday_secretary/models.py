@@ -4,6 +4,9 @@ from typing import Optional, Literal
 from pydantic import BaseModel, Field
 from typing import Optional, Literal
 from datetime import date
+from typing import Optional
+from datetime import date, datetime
+from pydantic import BaseModel, Field
 
 # ---------- 体調 ----------
 class HealthRequest(BaseModel):
@@ -18,9 +21,20 @@ class WorkRequest(BaseModel):
     start_date: Optional[date] = None
     end_date:   Optional[date] = None
 
-# ---------- 自己受容 ----------
+# ---------- Acceptance（自己受容） ----------
+class AcceptanceItem(BaseModel):
+    """シート『自己受容』1行分をそのまま表す"""
+    タイムスタンプ: date
+    今の気持ち: str
+    一番印象的だった感情: str
+    今日浮かんだ思考の断片: Optional[str] = None
+    今日の自分にかけたい言葉: Optional[str] = None
+    今日_自分を受け入れられた_瞬間はある: Optional[str] = None
+    書き残しておきたいこと: Optional[str] = None
+
 class AcceptanceRequest(BaseModel):
-    mode: Literal["latest", "period"] = "latest"
+    """/acceptance エンドポイントへのリクエスト"""
+    mode: Literal["latest", "period"]
     start_date: Optional[date] = None
     end_date: Optional[date] = None
 
