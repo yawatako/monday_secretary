@@ -5,23 +5,43 @@ from dotenv import load_dotenv
 
 # ─── 自作モジュール -------------------------------------------------
 from .clients import (
-    HealthClient, WorkClient, CalendarClient,
-    AcceptanceClient, MemoryClient,
+    HealthClient,
+    WorkClient,
+    CalendarClient,
+    AcceptanceClient,
+    MemoryClient,
 )
-from .utils.brake_checker      import BrakeChecker
-from .utils.memory_suggester   import needs_memory
-from .utils.pending_memory     import pop_pending, store_pending
-from .prompts                  import template
+from .utils.brake_checker import BrakeChecker
+from .utils.memory_suggester import needs_memory
+from .utils.pending_memory import pop_pending, store_pending
+from .prompts import template
 
 load_dotenv()
 
 # ─── Trigger 設定を YAML から読み込み ------------------------------
 cfg_path = os.getenv("PROMPT_YAML", "Gloomy Monday.yml")
-CFG = yaml.safe_load(open(cfg_path, encoding="utf-8")) if os.path.exists(cfg_path) else {}
+CFG = (
+    yaml.safe_load(open(cfg_path, encoding="utf-8")) if os.path.exists(cfg_path) else {}
+)
 
-MORNING_KWS = CFG.get("RulesPrompt", {}).get("Triggers", {})\
-                 .get("morning_trigger", {}).get("keywords", [])
-EVENING_KWS = ["疲れた", "おやすみ", "今日はここまで"]
+MORNING_KWS = (
+    CFG.get("RulesPrompt", {})
+    .get("Triggers", {})
+    .get("morning_trigger", {})
+    .get("keywords", [])
+)
+EVENING_KWS = (
+    CFG.get("RulesPrompt", {})
+    .get("Triggers", {})
+    .get("evening_trigger", {})
+    .get("keywords", [])
+)
+SELF_ACCEPT_KWS = (
+    CFG.get("RulesPrompt", {})
+    .get("Triggers", {})
+    .get("self_acceptance_trigger", {})
+    .get("keywords", [])
+)
 REMEMBER_KWS = ["覚えてる？", "思い出して", "あの時の記憶", "過去メモ"]
 
 # セッション ↔ ペンディングメモ
@@ -30,44 +50,44 @@ PENDING: Dict[str, str] = {}
 MORNING_LOCKS: Dict[str, asyncio.Lock] = {}
 LAST_MORNING: Dict[str, dt.datetime] = {}
 
+
 # ────────────────────────────────────────────────────────────────
 async def handle_message(user_msg: str, session_id: str = "default") -> str:
     """ユーザー入力を受けて GPT へ渡すプロンプト／Function 呼び出しを生成"""
 
     # 各クライアントを初期化
-    health_client     = HealthClient()
-    work_client       = WorkClient()
+    health_client = HealthClient()
+    work_client = WorkClient()
     acceptance_client = AcceptanceClient()
-    calendar_client   = CalendarClient()
-    memory_client     = MemoryClient()
-    checker           = BrakeChecker()
+    calendar_client = CalendarClient()
+    memory_client = MemoryClient()
+    checker = BrakeChecker()
 
     context = {}
 
     # ===== 0) remember_trigger =========================================
     if any(kw in user_msg for kw in REMEMBER_KWS):
         # 直近 5 件を時系列降順で取得 → Markdown 整形
-        results: List[dict] = await memory_client.search("")   # ← 空クエリ＝最新順
+        results: List[dict] = await memory_client.search("")  # ← 空クエリ＝最新順
         if not results:
             return "**Monday**：まだ何も記憶がないみたい… 🤔"
 
         lines = []
-        for pg in results:         # Notion API のレスポンス想定
+        for pg in results:  # Notion API のレスポンス想定
             props = pg["properties"]
             title = props["title"]["title"][0]["plain_text"]
             created = pg["created_time"][:10]
-            url  = pg["url"]
-            cat  = props["category"]["select"]["name"]
+            url = pg["url"]
+            cat = props["category"]["select"]["name"]
             lines.append(f"- **{title}**（{created} / {cat}）\n  {url}")
 
         return "**Monday**：こんなメモがあるよ 📚\n\n" + "\n".join(lines)
 
-    
-  # ── morning_trigger ──────────────────────────────────────────
+    # ── morning_trigger ──────────────────────────────────────────
     if any(kw in user_msg for kw in MORNING_KWS):
         state = MORNING_LOCKS.setdefault(session_id, asyncio.Lock())
-        last  = LAST_MORNING.get(session_id)
-        now   = dt.datetime.utcnow()
+        last = LAST_MORNING.get(session_id)
+        now = dt.datetime.utcnow()
         if state.locked():
             return "⏳ 朝のサマリーを生成中だよ。少し待ってね。"
         if last and (now - last).total_seconds() < 600:
@@ -87,10 +107,10 @@ async def handle_message(user_msg: str, session_id: str = "default") -> str:
             )
 
             # ① 体調詳細を組み立て
-            sleep   = health.get("睡眠時間")
+            sleep = health.get("睡眠時間")
             slept_w = "ぐっすり" if health.get("slept_well") else "浅め"
             stomach = health.get("胃腸")
-            mood    = health.get("気分")
+            mood = health.get("気分")
 
             if sleep is not None:
                 health_line = f"睡眠 {sleep}h（{slept_w}）／胃腸 {stomach or '—'}／気分 {mood or '—'}"
@@ -107,8 +127,14 @@ async def handle_message(user_msg: str, session_id: str = "default") -> str:
                 today_events = "　（登録なし。フリータイム！）"
 
             # ③ ブレーキ判定
-            brake_lvl  = checker.check(health, {}).level
-            brake_text = {0: "余裕あり", 1: "普通", 2: "注意", 3: "休憩優先", 4: "強制休憩"}[brake_lvl]
+            brake_lvl = checker.check(health, {}).level
+            brake_text = {
+                0: "余裕あり",
+                1: "普通",
+                2: "注意",
+                3: "休憩優先",
+                4: "強制休憩",
+            }[brake_lvl]
 
             # ④ メッセージ生成
             summary = (
@@ -127,13 +153,19 @@ async def handle_message(user_msg: str, session_id: str = "default") -> str:
             LAST_MORNING[session_id] = dt.datetime.utcnow()
             return summary
 
-  # ──────────── 2) evening_trigger ─────────────── 
+    # ──────────── 2) evening_trigger ───────────────
     if any(k in user_msg for k in EVENING_KWS):
-        today_acceptance = await acceptance_client.today()
-        work_today       = await work_client.today()   # WorkClient も同様に today() を実装している想定
+        work_today = await work_client.today()
         return (
             "**Monday**：今日もお疲れさま！\n"
-            f"🗒 **業務まとめ**：{work_today.get('今日のまとめ！', '—') if work_today else '（記録なし）'}\n"
+            f"🗒 **業務まとめ**：{work_today.get('今日のまとめ！', '—') if work_today else '（記録なし）'}"
+        )
+
+    # ───── 2b) self_acceptance_trigger ──────────────
+    if any(k in user_msg for k in SELF_ACCEPT_KWS):
+        today_acceptance = await acceptance_client.today()
+        return (
+            "**Monday**：一日の気持ちを振り返るね。\n"
             f"💬 **自己受容**：{today_acceptance.get('今の気持ち', '—') if today_acceptance else '（記録なし）'}"
         )
 
@@ -146,8 +178,11 @@ async def handle_message(user_msg: str, session_id: str = "default") -> str:
     # Yes/No 応答処理
     if (conf := pop_pending(session_id)) and user_msg.lower() in {"はい", "ok", "うん"}:
         payload = {
-            "title": conf[:30], "summary": conf,
-            "category": "思い出", "emotion": "楽しい", "reason": "自動メモ"
+            "title": conf[:30],
+            "summary": conf,
+            "category": "思い出",
+            "emotion": "楽しい",
+            "reason": "自動メモ",
         }
         page = await memory_client.create_record(payload)
         return f"✅ 記憶したよ。（id: {page['id'][:8]}…）"

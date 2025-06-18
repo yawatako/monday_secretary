@@ -51,9 +51,14 @@ class WorkClient:
         start_d = start if isinstance(start, date) else to_date(start)
         end_d = end if isinstance(end, date) else to_date(end)
 
-        return [
-            r
-            for r in rows
-            if start_d <= to_date(r["タイムスタンプ"]) <= end_d
-        ]
-        
+        return [r for r in rows if start_d <= to_date(r["タイムスタンプ"]) <= end_d]
+
+    # ───────────── API: 今日の1行 ───────────────
+    @retry(wait=wait_fixed(2), stop=stop_after_attempt(3))
+    async def today(self) -> Dict | None:
+        today = date.today()
+        rows = await self._to_thread(self.sheet.get_all_records)
+        for r in reversed(rows):
+            if to_date(r["タイムスタンプ"]) == today:
+                return r
+        return None
