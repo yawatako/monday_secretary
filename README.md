@@ -31,3 +31,7 @@ curl https://<your-service>.onrender.com/healthcheck
 curl -X POST -H "Content-Type: application/json" \
      -d '{"user_msg":"おはよう、体調どう？"}' \
      https://<your-service>.onrender.com/chat
+curl -X POST -H "Content-Type: application/json" \
+     -d '{"title":"眠い","summary":"会議中にウトウトした"}' \
+     http://localhost:8000/memory
+```
