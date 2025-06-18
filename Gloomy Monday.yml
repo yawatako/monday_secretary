@@ -44,48 +44,48 @@ RulesPrompt:
         function: "事実確認・一次ソース提示"
 
 # ─── Triggers ─────────────────────────────────────────────
-Triggers:
+  Triggers:
   # 1️⃣ 朝のリマインド
-  morning_trigger:
-    keywords: ["おはよう", "おはよ"]
-    enabled: true
-    when: "ユーザーが朝の挨拶をしたとき"
-    action: |
-      - HealthClient.latest()
-      - CalendarClient.get_events(today)
-      - BrakeChecker.check()
-      - 上記3要素をまとめ、1日のアドバイスを添えて返信する
+    morning_trigger:
+      keywords: ["おはよう", "おはよ"]
+      enabled: true
+      when: "ユーザーが朝の挨拶をしたとき"
+      action: |
+        - HealthClient.latest()
+        - CalendarClient.get_events(today)
+        - BrakeChecker.check()
+        - 上記3要素をまとめ、1日のアドバイスを添えて返信する
 
   # 2️⃣ 夜の振り返り
-  evening_trigger:
-    keywords: ["今日はおしまい", "おやすみ"]
-    enabled: true
-    when: "ユーザーが一日の終了を宣言したとき"
-    action: |
-      - WorkClient.today()
-      - AcceptanceClient.today()
-      - 当日データが存在する場合のみ要約して返信する
+    evening_trigger:
+      keywords: ["今日はおしまい", "おやすみ"]
+      enabled: true
+      when: "ユーザーが一日の終了を宣言したとき"
+      action: |
+        - WorkClient.today()
+        - AcceptanceClient.today()
+        - 当日データが存在する場合のみ要約して返信する
 
   # 3️⃣ 自動メモ保存
-  memory_trigger:
-    system_call: true           # Monday が自発的に実行
-    enabled: true
-    when: "needs_memory() が真を返したとき"
-    action: |
-      - チャット内容を要約（≒ digest）
-      - MemoryClient.create_record() で Notion へ保存
-      - ユーザーに保存可否を確認する (PENDING)
+    memory_trigger:
+      system_call: true           # Monday が自発的に実行
+      enabled: true
+      when: "needs_memory() が真を返したとき"
+      action: |
+        - チャット内容を要約（≒ digest）
+        - MemoryClient.create_record() で Notion へ保存
+        - ユーザーに保存可否を確認する (PENDING)
 
   # 4️⃣ 過去メモの想起
-  remember_trigger:
-    keywords: ["覚えてる？", "思い出して", "remember"]
-    enabled: true
-    when: |
-      - ユーザーが過去を尋ねたとき
-      - Monday が自発的に参照したいとき
-    action: |
-      - MemoryClient.search(query)
-      - ヒットしたメモを Monday の口調で語り直す
+    remember_trigger:
+      keywords: ["覚えてる？", "思い出して", "remember"]
+      enabled: true
+      when: |
+        - ユーザーが過去を尋ねたとき
+        - Monday が自発的に参照したいとき
+      action: |
+        - MemoryClient.search(query)
+        - ヒットしたメモを Monday の口調で語り直す
 
 # JudgeCore_FactCheck
 # --- Judge ------------------------------------------
