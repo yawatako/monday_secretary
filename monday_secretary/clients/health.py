@@ -18,8 +18,10 @@ class HealthClient:
         return await asyncio.to_thread(func, *args, **kwargs)
 
     @staticmethod
-    def _to_date(s: str) -> date:
+    def _to_date(s: str | date) -> date:
         """'YYYY/MM/DD' or 'YYYY-MM-DD' -> date"""
+        if isinstance(s, date):
+            return s
         return datetime.fromisoformat(s.replace("/", "-")).date()
 
     @retry(wait=wait_fixed(2), stop=stop_after_attempt(3))

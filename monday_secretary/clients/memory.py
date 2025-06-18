@@ -16,8 +16,8 @@ class MemoryClient:
 
         # DB のカラム名を列挙しておくと安全
         self.valid_props: set[str] = {
-            "Title", "Summary", "Category",
-            "Emotion", "Reason", "Timestamp"
+            "タイトル", "要約", "カテゴリ",
+            "感情", "理由", "タイムスタンプ"
         }
 
     # ---------- 共通ユーティリティ ----------
@@ -34,18 +34,21 @@ class MemoryClient:
             if name in self.valid_props:
                 props[name] = value
 
-        add("Title", {
+        add("タイトル", {
             "title": [{"text": {"content": payload["title"]}}]
         })
-        add("Summary", {
+        add("要約", {
             "rich_text": [{"text": {"content": payload["summary"]}}]
         })
-        add("Category", {"select": {"name": payload["category"]}})
-        add("Emotion",  {"select": {"name": payload["emotion"]}})
-        add("Reason", {
-            "rich_text": [{"text": {"content": payload["reason"]}}]
-        })
-        add("Timestamp", {
+        if payload.get("category"):
+            add("カテゴリ", {"select": {"name": payload["category"]}})
+        if payload.get("emotion"):
+            add("感情",  {"select": {"name": payload["emotion"]}})
+        if payload.get("reason"):
+            add("理由", {
+                "rich_text": [{"text": {"content": payload["reason"]}}]
+            })
+        add("タイムスタンプ", {
             "date": {
                 "start": (
                     payload.get("timestamp") or datetime.utcnow()
