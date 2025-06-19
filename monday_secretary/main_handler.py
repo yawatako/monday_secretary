@@ -162,12 +162,15 @@ async def handle_message(user_msg: str, session_id: str = "default") -> str:
 
     # ──────────── 2.5) weekend_trigger ─────────────
     if any(k in user_msg for k in WEEKEND_KWS):
+        start = dt.date.today() - dt.timedelta(days=6)
+        end = dt.date.today()
+
         tasks = await TasksClient().list_tasks()
-        start = dt.date.today() + dt.timedelta(days=1)
-        end = start + dt.timedelta(days=7)
         events = await CalendarClient().get_events(
             f"{start}T00:00:00Z", f"{end}T23:59:59Z"
         )
+        health = await HealthClient().period(start, end)
+        works = await WorkClient().period(start, end)
 
         groups: Dict[str, List[str]] = {}
         for t in tasks:
@@ -187,14 +190,28 @@ async def handle_message(user_msg: str, session_id: str = "default") -> str:
 
         event_lines = [
             f"- {e['summary']} ({e['start']['dateTime'][:10]})" for e in events
-        ] or ["- （予定なし）"]
+        ] or ["- （イベントなし）"]
+
+        health_lines = [
+            f"- {h.get('timestamp', '')[:10]} {h.get('mood', h.get('状態', ''))}"
+            for h in health
+        ] or ["- （データなし）"]
+
+        work_lines = [
+            f"- {w.get('timestamp', '')[:10]} {w.get('daily_summary', '')}"
+            for w in works
+        ] or ["- （記録なし）"]
 
         summary = (
             "**Monday**：週末整理の時間だよ。\n\n"
             "### 📝 未完タスク\n"
             + "\n".join(task_lines)
-            + "\n\n### 📅 来週の予定\n"
+            + "\n\n### 📅 今週のイベント\n"
             + "\n".join(event_lines)
+            + "\n\n### 🩺 体調ログ\n"
+            + "\n".join(health_lines)
+            + "\n\n### 🗒 業務ログ\n"
+            + "\n".join(work_lines)
             + "\n\n削除・延期・予定化・そのまま、どうするか教えてね。"
         )
         return summary
