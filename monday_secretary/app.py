@@ -257,7 +257,3 @@ async def oauth2callback(request: Request):
     refresh_token = flow.credentials.refresh_token
     if not refresh_token:
         return JSONResponse(status_code=400, content={"detail": "no refresh_token returned"})
-
-    # ── 4) 一度だけ応急で返却 or LOG ───────
-    # 終わったら必ず消そう！
-    return {"refresh_token": refresh_token}
