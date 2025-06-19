@@ -9,6 +9,7 @@ from .clients import (
     WorkClient,
     CalendarClient,
     MemoryClient,
+    TasksClient,
 )
 from .utils.brake_checker import BrakeChecker
 from .utils.memory_suggester import needs_memory
@@ -33,6 +34,12 @@ EVENING_KWS = (
     CFG.get("RulesPrompt", {})
     .get("Triggers", {})
     .get("evening_trigger", {})
+    .get("keywords", [])
+)
+WEEKEND_KWS = (
+    CFG.get("RulesPrompt", {})
+    .get("Triggers", {})
+    .get("weekend_trigger", {})
     .get("keywords", [])
 )
 REMEMBER_KWS = ["覚えてる？", "思い出して", "あの時の記憶", "過去メモ"]
@@ -152,6 +159,45 @@ async def handle_message(user_msg: str, session_id: str = "default") -> str:
             "**Monday**：今日もお疲れさま！\n"
             f"🗒 **業務まとめ**：{work_today.get('今日のまとめ！', '—') if work_today else '（記録なし）'}"
         )
+
+    # ──────────── 2.5) weekend_trigger ─────────────
+    if any(k in user_msg for k in WEEKEND_KWS):
+        tasks = await TasksClient().list_tasks()
+        start = dt.date.today() + dt.timedelta(days=1)
+        end = start + dt.timedelta(days=7)
+        events = await CalendarClient().get_events(
+            f"{start}T00:00:00Z", f"{end}T23:59:59Z"
+        )
+
+        groups: Dict[str, List[str]] = {}
+        for t in tasks:
+            notes = t.get("notes", "")
+            tags = [w[1:] for w in notes.split() if w.startswith("#")]
+            if not tags:
+                tags = ["その他"]
+            line = f"{t.get('title')} ({t.get('due', '-')[:10]})"
+            for tg in tags:
+                groups.setdefault(tg, []).append(line)
+
+        task_lines = []
+        for tag, items in groups.items():
+            task_lines.append(f"- **#{tag}**")
+            for it in items:
+                task_lines.append(f"  - {it}")
+
+        event_lines = [
+            f"- {e['summary']} ({e['start']['dateTime'][:10]})" for e in events
+        ] or ["- （予定なし）"]
+
+        summary = (
+            "**Monday**：週末整理の時間だよ。\n\n"
+            "### 📝 未完タスク\n"
+            + "\n".join(task_lines)
+            + "\n\n### 📅 来週の予定\n"
+            + "\n".join(event_lines)
+            + "\n\n削除・延期・予定化・そのまま、どうするか教えてね。"
+        )
+        return summary
 
 
 
