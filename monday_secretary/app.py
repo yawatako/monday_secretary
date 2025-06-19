@@ -32,6 +32,9 @@ import os
 import logging
 import traceback
 
+from google_auth_oauthlib.flow import Flow
+import os, json
+
 logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Monday Secretary API")
@@ -216,31 +219,45 @@ async def tasks_api(req: TaskRequest):
 # ---------- OAuth2 Callback ----------
 @app.get("/oauth2callback")
 async def oauth2callback(request: Request):
-    """Handle Google OAuth2 redirect"""
-    client_id = os.getenv("GOOGLE_TASKS_CLIENT_ID")
-    client_secret = os.getenv("GOOGLE_TASKS_CLIENT_SECRET")
-    redirect_uri = "https://health-api-server.onrender.com/oauth2callback"
+    # ── 1) env から値を取得 ─────────────────
+    client_id     = os.getenv("GOOGLE_OAUTH_CLIENT_ID")
+    client_secret = os.getenv("GOOGLE_OAUTH_CLIENT_SECRET")
+    redirect_uri  = "https://health-api-server.onrender.com/oauth2callback"
+    token_uri     = "https://oauth2.googleapis.com/token"
+    auth_uri      = "https://accounts.google.com/o/oauth2/auth"
+
+    if not (client_id and client_secret):
+        return JSONResponse(status_code=500,
+                            content={"detail": "env var missing: GOOGLE_OAUTH_CLIENT_ID / _SECRET"})
+
+    # ── 2) Flow を正しい形で構築 ─────────────
+    client_config = {
+        "web": {
+            "client_id": client_id,
+            "client_secret": client_secret,
+            "auth_uri": auth_uri,
+            "token_uri": token_uri,
+            "redirect_uris": [redirect_uri]
+        }
+    }
 
     flow = Flow.from_client_config(
-        {
-            "installed": {
-                "client_id": client_id,
-                "client_secret": client_secret,
-                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-                "token_uri": "https://oauth2.googleapis.com/token",
-                "redirect_uris": [redirect_uri],
-            }
-        },
+        client_config=client_config,
         scopes=["https://www.googleapis.com/auth/tasks"],
         redirect_uri=redirect_uri,
     )
 
-    flow.fetch_token(code=request.query_params.get("code"))
-    creds = flow.credentials
-    refresh_token = creds.refresh_token
+    # ── 3) トークン交換 ─────────────────────
+    try:
+        flow.fetch_token(code=request.query_params.get("code"))
+    except Exception as e:
+        # 失敗するときは内容を返すとデバッグしやすい
+        return JSONResponse(status_code=400, content={"detail": str(e)})
 
-    if refresh_token:
-        logging.info("Received refresh_token: %s", refresh_token)
-        return {"refresh_token": refresh_token}
+    refresh_token = flow.credentials.refresh_token
+    if not refresh_token:
+        return JSONResponse(status_code=400, content={"detail": "no refresh_token returned"})
 
-    return {"status": "ok"}
+    # ── 4) 一度だけ応急で返却 or LOG ───────
+    # 終わったら必ず消そう！
+    return {"refresh_token": refresh_token}
