@@ -87,6 +87,19 @@ RulesPrompt:
         - MemoryClient.search(query)
         - ヒットしたメモを Monday の口調で語り直す
 
+  # 5️⃣ 週末整理
+    weekend_trigger:
+      keywords: ["週末整理", "今週終わり", "weekend"]
+      enabled: true
+      when: "金曜の業務終了後、1週間を振り返りたいとき"
+      action: |
+        - TasksClient.list_tasks()             # 未完タスクを取得
+        - CalendarClient.get_events(last_week) # 実行済みイベントログ
+        - HealthClient.period(last_week)
+        - WorkClient.period(last_week)
+        - 未完タスクはタグごとに整理
+        - スケジュール・体調・業務の変化を要約表示
+
 # JudgeCore_FactCheck
 # --- Judge ------------------------------------------
 JudgeCore:

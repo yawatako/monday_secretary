@@ -45,6 +45,12 @@ curl -X POST -H "Content-Type: application/json" \
     http://localhost:8000/tasks
 ```
 
+### Weekend cleanup
+
+Running `handle_message("週末整理して")` will collect this week's events,
+unfinished tasks, health logs and work summaries. It helps review progress
+before planning the next week.
+
 ### Google Tasks client example
 
 ```python
