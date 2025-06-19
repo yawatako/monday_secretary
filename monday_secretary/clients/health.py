@@ -19,8 +19,9 @@ class HealthClient:
 
     @staticmethod
     def _to_date(s: str) -> date:
-        """'YYYY/MM/DD' or 'YYYY-MM-DD' -> date"""
-        return datetime.fromisoformat(s.replace("/", "-")).date()
+        """'YYYY/MM/DD' or 'YYYY-MM-DD' or with time -> date"""
+        part = s.replace("/", "-").split()[0]
+        return datetime.fromisoformat(part).date()
 
     @retry(wait=wait_fixed(2), stop=stop_after_attempt(3))
     async def latest(self) -> dict:

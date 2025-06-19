@@ -9,6 +9,7 @@ Exposes:
 """
 
 from fastapi import FastAPI, HTTPException, Request
+from google_auth_oauthlib.flow import Flow
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from pydantic import BaseModel
@@ -40,6 +41,7 @@ async def general_exception_handler(request: Request, exc: Exception):
 
 
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    logger.exception("validation error")
     return JSONResponse(status_code=422, content={"detail": exc.errors()})
 
 
@@ -147,9 +149,12 @@ async def calendar_event_alias(req: CalendarRequest):
 @app.post("/memory", tags=["memory"])
 async def memory_api(req: MemoryRequest):
     payload = req.model_dump()
-    payload.setdefault("category", "その他")
-    payload.setdefault("emotion", "嬉しい")
-    payload.setdefault("reason", "")
+    if not payload.get("category"):
+        payload["category"] = "その他"
+    if not payload.get("emotion"):
+        payload["emotion"] = "嬉しい"
+    if not payload.get("reason"):
+        payload["reason"] = ""
     page = await MemoryClient().create_record(payload)
     return {"inserted": page["id"]}
 
@@ -168,3 +173,28 @@ async def get_memory_alias(req: MemorySearchRequest):
     except Exception as e:
         logging.exception("memory_search failed:")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ---------- OAuth2 Callback ----------
+@app.get("/oauth2callback")
+async def oauth2callback(request: Request):
+    """Handle Google OAuth2 redirect"""
+    client_id = os.getenv("GOOGLE_TASKS_CLIENT_ID")
+    client_secret = os.getenv("GOOGLE_TASKS_CLIENT_SECRET")
+    redirect_uri = "https://health-api-server.onrender.com/oauth2callback"
+
+    flow = Flow(
+        client_id=client_id,
+        client_secret=client_secret,
+        scopes=["https://www.googleapis.com/auth/tasks"],
+        redirect_uri=redirect_uri,
+    )
+
+    flow.fetch_token(code=request.query_params.get("code"))
+    creds = flow.credentials
+    refresh_token = creds.refresh_token
+
+    if refresh_token:
+        os.environ["GOOGLE_TASKS_REFRESH_TOKEN"] = refresh_token
+
+    return {"status": "ok"}
