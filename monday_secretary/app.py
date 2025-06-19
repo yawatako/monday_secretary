@@ -90,6 +90,7 @@ async def health_api(req: HealthRequest):
                 data = await client.daily_summary(req.start_date or client.today)
         return data
     except Exception as e:
+        logger.exception("health_api failed")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -146,6 +147,7 @@ async def calendar_api(req: CalendarRequest):
                 data = await client.delete_event(req.event_id)  # ← await
         return data or {"status": "ok"}
     except Exception as e:
+        logger.exception("calendar_api failed")
         raise HTTPException(status_code=500, detail=str(e))
 
 
