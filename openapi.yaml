@@ -43,25 +43,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/WorkDataResponse"
-  /functions/get_acceptance_data:
-    post:
-      operationId: getAcceptanceData
-      summary: 自己受容メモを取得
-      tags:
-        - Acceptance
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/AcceptanceRequest"
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/AcceptanceResponse"
   /functions/calendar_event:
     post:
       operationId: calendarEvent
@@ -261,51 +242,6 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/WorkItem"
-    AcceptanceRequest:
-      type: object
-      required:
-        - mode
-      properties:
-        mode:
-          type: string
-          enum:
-            - latest
-            - period
-          default: latest
-        start_date:
-          type: string
-          format: date
-        end_date:
-          type: string
-          format: date
-    AcceptanceItem:
-      type: object
-      properties:
-        timestamp:
-          type: string
-          format: date
-        currentFeeling:
-          type: string
-        mostImpressiveEmotion:
-          type: string
-        thoughtFragments:
-          type: string
-        wordsToMyself:
-          type: string
-        acceptedMoment:
-          type: string
-        notes:
-          type: string
-    AcceptanceResponse:
-      type: object
-      properties:
-        status:
-          type: string
-          example: success
-        data:
-          type: array
-          items:
-            $ref: "#/components/schemas/AcceptanceItem"
     CalendarRequest:
       type: object
       required:

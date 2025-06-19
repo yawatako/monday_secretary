@@ -65,14 +65,6 @@ RulesPrompt:
         - WorkClient.today()
         - 当日データが存在する場合のみ要約して返信する
 
-  # 2️⃣-2 自己受容の振り返り
-    self_acceptance_trigger:
-      keywords: ["自己受容", "self-acceptance"]
-      enabled: true
-      when: "ユーザーが自己受容を振り返りたいとき"
-      action: |
-        - AcceptanceClient.today()
-        - 当日データが存在する場合のみ要約して返信する
 
   # 3️⃣ 自動メモ保存
     memory_trigger:

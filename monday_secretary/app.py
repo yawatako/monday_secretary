@@ -26,8 +26,6 @@ from .models import WorkRequest
 from .clients.calendar import CalendarClient
 from .clients.memory import MemoryClient
 import os
-from .clients.acceptance import AcceptanceClient
-from .models import AcceptanceRequest
 import logging
 import traceback
 
@@ -114,27 +112,6 @@ async def work_api(req: WorkRequest):
 @app.post("/functions/get_work_data", tags=["functions"])
 async def work_alias(req: WorkRequest):
     return await work_api(req)
-
-
-# ---------- Acceptance ----------
-@app.post("/acceptance")
-async def acceptance_api(req: AcceptanceRequest):
-    client = AcceptanceClient()
-    try:
-        if req.mode == "latest":
-            data = await client.latest()
-        else:
-            data = await client.period(req.start_date, req.end_date)
-        return data
-    except Exception as e:
-        logging.exception("acceptance_api failed")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-# OpenAPI alias
-@app.post("/functions/get_acceptance_data", tags=["acceptance"])
-async def acceptance_alias(req: AcceptanceRequest):
-    return await acceptance_api(req)
 
 
 # ---------- Calendar ----------

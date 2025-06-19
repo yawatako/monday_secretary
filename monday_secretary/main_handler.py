@@ -8,7 +8,6 @@ from .clients import (
     HealthClient,
     WorkClient,
     CalendarClient,
-    AcceptanceClient,
     MemoryClient,
 )
 from .utils.brake_checker import BrakeChecker
@@ -36,12 +35,6 @@ EVENING_KWS = (
     .get("evening_trigger", {})
     .get("keywords", [])
 )
-SELF_ACCEPT_KWS = (
-    CFG.get("RulesPrompt", {})
-    .get("Triggers", {})
-    .get("self_acceptance_trigger", {})
-    .get("keywords", [])
-)
 REMEMBER_KWS = ["覚えてる？", "思い出して", "あの時の記憶", "過去メモ"]
 
 # セッション ↔ ペンディングメモ
@@ -58,7 +51,6 @@ async def handle_message(user_msg: str, session_id: str = "default") -> str:
     # 各クライアントを初期化
     health_client = HealthClient()
     work_client = WorkClient()
-    acceptance_client = AcceptanceClient()
     calendar_client = CalendarClient()
     memory_client = MemoryClient()
     checker = BrakeChecker()
@@ -161,13 +153,7 @@ async def handle_message(user_msg: str, session_id: str = "default") -> str:
             f"🗒 **業務まとめ**：{work_today.get('今日のまとめ！', '—') if work_today else '（記録なし）'}"
         )
 
-    # ───── 2b) self_acceptance_trigger ──────────────
-    if any(k in user_msg for k in SELF_ACCEPT_KWS):
-        today_acceptance = await acceptance_client.today()
-        return (
-            "**Monday**：一日の気持ちを振り返るね。\n"
-            f"💬 **自己受容**：{today_acceptance.get('今の気持ち', '—') if today_acceptance else '（記録なし）'}"
-        )
+
 
     # ──────────── 3) Memory Trigger ────────────────
     should_mem, digest, summary = needs_memory(user_msg, "")
@@ -196,8 +182,6 @@ async def handle_message(user_msg: str, session_id: str = "default") -> str:
     if "work" in user_msg or "業務" in user_msg:
         context["work"] = await work_client.latest()
 
-    if "acceptance" in user_msg or "自己受容" in user_msg:
-        context["acceptance"] = await acceptance_client.latest()
 
     if "calendar" in user_msg:
         now_iso = dt.datetime.utcnow().isoformat() + "Z"
