@@ -60,4 +60,3 @@ When an internal error occurs, the API returns a JSON body like:
 ```
 
 This helps with debugging failing requests.
-All unexpected errors are also logged server-side with a full stack trace.
