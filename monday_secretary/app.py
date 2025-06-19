@@ -251,9 +251,9 @@ async def oauth2callback(request: Request):
     try:
         flow.fetch_token(code=request.query_params.get("code"))
     except Exception as e:
-    return JSONResponse(status_code=400,
-                        content={"detail": str(e)})
-
+        return JSONResponse(status_code=400,
+                            content={"detail": str(e)})
+    
     refresh_token = flow.credentials.refresh_token
     if not refresh_token:
         return JSONResponse(status_code=400, content={"detail": "no refresh_token returned"})
