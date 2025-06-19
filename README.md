@@ -38,6 +38,8 @@ curl -X POST -H "Content-Type: application/json" \
 curl -X POST -H "Content-Type: application/json" \
      -d '{"title":"眠い","summary":"会議中にウトウトした"}' \
      http://localhost:8000/memory
+# Only `title` and `summary` are required. Other fields will be filled with
+# sensible defaults by the API.
 curl -X POST -H "Content-Type: application/json" \
      -d '{"action":"list"}' \
     http://localhost:8000/tasks
