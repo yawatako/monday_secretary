@@ -13,8 +13,8 @@ class TasksClient(BaseClient):
         self.creds = Credentials(
             None,
             refresh_token=os.getenv("GOOGLE_TASKS_REFRESH_TOKEN"),
-            client_id=os.getenv("GOOGLE_TASKS_CLIENT_ID"),
-            client_secret=os.getenv("GOOGLE_TASKS_CLIENT_SECRET"),
+            client_id=os.getenv("GOOGLE_OAUTH_CLIENT_ID"),
+            client_secret=os.getenv("GOOGLE_OAUTH_CLIENT_SECRET"),
             token_uri="https://oauth2.googleapis.com/token",
         )
         self.service = build("tasks", "v1", credentials=self.creds)
