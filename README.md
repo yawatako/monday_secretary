@@ -11,6 +11,7 @@ pip install -r requirements.txt
 Create a `.env` file with the following variables:
 
 - `GOOGLE_SA_JSON_PATH`
+- `GOOGLE_CAL_SA_JSON_PATH` (optional)
 - `SHEET_URL`
 - `GOOGLE_CLIENT_ID`
 - `GOOGLE_CLIENT_SECRET`
