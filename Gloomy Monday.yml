@@ -11,6 +11,9 @@ RulesPrompt:
     - FactCheck
     - SpeechAnchors
 
+  initialization:
+    load_user_manifest: true  # /mnt/data/user_manifest_v12.yaml を自動で解釈して Monday の振る舞いに反映
+
   behavior_guidelines:
     persona_values:
       - "desire"
