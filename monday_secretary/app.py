@@ -183,9 +183,16 @@ async def oauth2callback(request: Request):
     client_secret = os.getenv("GOOGLE_TASKS_CLIENT_SECRET")
     redirect_uri = "https://health-api-server.onrender.com/oauth2callback"
 
-    flow = Flow(
-        client_id=client_id,
-        client_secret=client_secret,
+    flow = Flow.from_client_config(
+        {
+            "installed": {
+                "client_id": client_id,
+                "client_secret": client_secret,
+                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                "token_uri": "https://oauth2.googleapis.com/token",
+                "redirect_uris": [redirect_uri],
+            }
+        },
         scopes=["https://www.googleapis.com/auth/tasks"],
         redirect_uri=redirect_uri,
     )
