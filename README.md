@@ -40,5 +40,11 @@ curl -X POST -H "Content-Type: application/json" \
      http://localhost:8000/memory
 curl -X POST -H "Content-Type: application/json" \
      -d '{"action":"list"}' \
-     http://localhost:8000/tasks
+    http://localhost:8000/tasks
 ```
+
+### Client utilities
+
+Each API client inherits from `BaseClient` which provides a helper
+method for running blocking SDK calls in a background thread. All network
+operations share the same retry logic via the `DEFAULT_RETRY` decorator.

@@ -1,12 +1,12 @@
 import os
-import asyncio
 from datetime import datetime, date
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
-from tenacity import retry, wait_fixed, stop_after_attempt
+
+from .base import BaseClient, DEFAULT_RETRY
 
 
-class TasksClient:
+class TasksClient(BaseClient):
     """Minimal wrapper for Google Tasks API."""
 
     def __init__(self):
@@ -20,11 +20,8 @@ class TasksClient:
         self.service = build("tasks", "v1", credentials=self.creds)
         self.tasklist = os.getenv("GOOGLE_TASKS_LIST_ID", "@default")
 
-    async def _to_thread(self, func, *args, **kwargs):
-        return await asyncio.to_thread(func, *args, **kwargs)
-
     # ---- Core API ----
-    @retry(wait=wait_fixed(2), stop=stop_after_attempt(3))
+    @DEFAULT_RETRY
     async def list_tasks(self, show_completed: bool = False) -> list[dict]:
         def _call():
             return (
@@ -36,7 +33,7 @@ class TasksClient:
         res = await self._to_thread(_call)
         return res.get("items", [])
 
-    @retry(wait=wait_fixed(2), stop=stop_after_attempt(3))
+    @DEFAULT_RETRY
     async def add_task(
         self,
         title: str,
@@ -59,7 +56,7 @@ class TasksClient:
 
         return await self._to_thread(_call)
 
-    @retry(wait=wait_fixed(2), stop=stop_after_attempt(3))
+    @DEFAULT_RETRY
     async def complete_task(self, task_id: str) -> dict:
         def _call():
             return (

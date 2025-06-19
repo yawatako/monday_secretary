@@ -1,13 +1,13 @@
 import os
-import asyncio
 from datetime import datetime
 from typing import Any, Dict
 
 from notion_client import Client
-from tenacity import retry, wait_fixed, stop_after_attempt
+
+from .base import BaseClient, DEFAULT_RETRY
 
 
-class MemoryClient:
+class MemoryClient(BaseClient):
     """Interact with Notion database."""
 
     def __init__(self):
@@ -20,9 +20,6 @@ class MemoryClient:
             "Emotion", "Reason", "Timestamp"
         }
 
-    # ---------- 共通ユーティリティ ----------
-    async def _to_thread(self, func, *args, **kwargs):
-        return await asyncio.to_thread(func, *args, **kwargs)
 
     # ---------- 内部ヘルパ ----------
     def _build_properties(self, payload: Dict[str, Any]) -> Dict[str, Any]:
@@ -55,7 +52,7 @@ class MemoryClient:
         return props
 
     # ---------- Public API ----------
-    @retry(wait=wait_fixed(2), stop=stop_after_attempt(3))
+    @DEFAULT_RETRY
     async def create_record(self, payload: Dict[str, Any]) -> Dict[str, Any]:
         page_body = {
             "parent": {"database_id": self.db_id},
@@ -63,7 +60,7 @@ class MemoryClient:
         }
         return await self._to_thread(self.client.pages.create, **page_body)
 
-    @retry(wait=wait_fixed(2), stop=stop_after_attempt(3))
+    @DEFAULT_RETRY
     async def search(self, query: str, top_k: int = 5) -> list[Dict[str, Any]]:
         def _call():
             return self.client.search(query=query, page_size=top_k)

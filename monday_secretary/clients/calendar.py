@@ -1,11 +1,11 @@
 import os
-import asyncio
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
-from tenacity import retry, wait_fixed, stop_after_attempt
+
+from .base import BaseClient, DEFAULT_RETRY
 
 
-class CalendarClient:
+class CalendarClient(BaseClient):
     """Access Google Calendar API."""
 
     def __init__(self):
@@ -18,10 +18,8 @@ class CalendarClient:
         )
         self.service = build("calendar", "v3", credentials=self.creds)
 
-    async def _to_thread(self, func, *args, **kwargs):
-        return await asyncio.to_thread(func, *args, **kwargs)
 
-    @retry(wait=wait_fixed(2), stop=stop_after_attempt(3))
+    @DEFAULT_RETRY
     async def get_events(self, time_min: str, time_max: str) -> list:
         def _call():
             events = (
@@ -33,7 +31,7 @@ class CalendarClient:
 
         return await self._to_thread(_call)
 
-    @retry(wait=wait_fixed(2), stop=stop_after_attempt(3))
+    @DEFAULT_RETRY
     async def insert_event(self, summary: str, start: str, end: str) -> dict:
         body = {
             "summary": summary,
