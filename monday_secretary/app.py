@@ -240,6 +240,7 @@ async def oauth2callback(request: Request):
     refresh_token = creds.refresh_token
 
     if refresh_token:
-        os.environ["GOOGLE_TASKS_REFRESH_TOKEN"] = refresh_token
+        logging.info("Received refresh_token: %s", refresh_token)
+        return {"refresh_token": refresh_token}
 
     return {"status": "ok"}
