@@ -4,10 +4,12 @@ from .health   import HealthClient
 from .calendar import CalendarClient
 from .memory   import MemoryClient
 from .work     import WorkClient
+from .tasks    import TasksClient
 
 __all__ = [
     "HealthClient",
     "CalendarClient",
     "MemoryClient",
     "WorkClient",
+    "TasksClient",
 ]
