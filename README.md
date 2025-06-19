@@ -45,6 +45,26 @@ curl -X POST -H "Content-Type: application/json" \
     http://localhost:8000/tasks
 ```
 
+### Google Tasks client example
+
+```python
+from google.oauth2.credentials import Credentials
+from googleapiclient.discovery import build
+import os
+
+creds = Credentials(
+    None,
+    refresh_token=os.getenv("GOOGLE_TASKS_REFRESH_TOKEN"),
+    token_uri="https://oauth2.googleapis.com/token",
+    client_id=os.getenv("GOOGLE_OAUTH_CLIENT_ID"),
+    client_secret=os.getenv("GOOGLE_OAUTH_CLIENT_SECRET"),
+    scopes=["https://www.googleapis.com/auth/tasks"],
+)
+
+service = build("tasks", "v1", credentials=creds)
+print(service.tasklists().list().execute())
+```
+
 ### Client utilities
 
 Each API client inherits from `BaseClient` which provides a helper

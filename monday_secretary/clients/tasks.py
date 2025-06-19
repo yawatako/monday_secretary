@@ -10,13 +10,25 @@ class TasksClient(BaseClient):
     """Minimal wrapper for Google Tasks API."""
 
     def __init__(self):
+        refresh_token = os.getenv("GOOGLE_TASKS_REFRESH_TOKEN")
+        client_id = os.getenv("GOOGLE_OAUTH_CLIENT_ID")
+        client_secret = os.getenv("GOOGLE_OAUTH_CLIENT_SECRET")
+
+        if not (refresh_token and client_id and client_secret):
+            raise RuntimeError(
+                "Missing env vars: GOOGLE_TASKS_REFRESH_TOKEN, "
+                "GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_SECRET"
+            )
+
         self.creds = Credentials(
             None,
-            refresh_token=os.getenv("GOOGLE_TASKS_REFRESH_TOKEN"),
-            client_id=os.getenv("GOOGLE_OAUTH_CLIENT_ID"),
-            client_secret=os.getenv("GOOGLE_OAUTH_CLIENT_SECRET"),
+            refresh_token=refresh_token,
+            client_id=client_id,
+            client_secret=client_secret,
             token_uri="https://oauth2.googleapis.com/token",
+            scopes=["https://www.googleapis.com/auth/tasks"],
         )
+
         self.service = build("tasks", "v1", credentials=self.creds)
         self.tasklist = os.getenv("GOOGLE_TASKS_LIST_ID", "@default")
 
