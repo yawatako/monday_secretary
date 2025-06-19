@@ -5,8 +5,9 @@ from datetime import date
 from typing import List, Dict
 
 import gspread
+from google.oauth2 import service_account
 
-from .base import BaseClient, DEFAULT_RETRY
+from .base import BaseClient, DEFAULT_RETRY, SA_PATH, SCOPES_SHEETS
 
 # 共通ヘルパ：文字列 → date 変換
 from monday_secretary.utils.date import to_date
@@ -16,10 +17,11 @@ class WorkClient(BaseClient):
     """Google シートの〈業務記録〉タブを読む軽量クライアント"""
 
     def __init__(self) -> None:
-        sa_path = os.getenv("GOOGLE_SA_JSON_PATH")
         sheet_url = os.getenv("SHEET_URL")
-
-        self.gc = gspread.service_account(filename=sa_path)
+        self.creds = service_account.Credentials.from_service_account_file(
+            SA_PATH, scopes=SCOPES_SHEETS
+        )
+        self.gc = gspread.authorize(self.creds)
         self.sheet = self.gc.open_by_url(sheet_url).worksheet("業務記録")
 
 

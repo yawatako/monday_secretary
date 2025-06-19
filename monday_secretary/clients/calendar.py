@@ -1,28 +1,23 @@
 import os
-from google.oauth2.credentials import Credentials
-from google.oauth2.service_account import Credentials as SACredentials
 from googleapiclient.discovery import build
+from google.oauth2 import service_account
 
-from .base import BaseClient, DEFAULT_RETRY
+from .base import (
+    BaseClient,
+    DEFAULT_RETRY,
+    SA_PATH,
+    SCOPES_CALENDAR,
+)
 
 
 class CalendarClient(BaseClient):
     """Access Google Calendar API."""
 
     def __init__(self):
-        sa_path = os.getenv("GOOGLE_CAL_SA_JSON_PATH")
-        if sa_path:
-            self.creds = SACredentials.from_service_account_file(
-                sa_path, scopes=["https://www.googleapis.com/auth/calendar"]
-            )
-        else:
-            self.creds = Credentials(
-                None,
-                refresh_token=os.getenv("GOOGLE_REFRESH_TOKEN"),
-                client_id=os.getenv("GOOGLE_CLIENT_ID"),
-                client_secret=os.getenv("GOOGLE_CLIENT_SECRET"),
-                token_uri="https://oauth2.googleapis.com/token",
-            )
+        self.creds = service_account.Credentials.from_service_account_file(
+            SA_PATH,
+            scopes=SCOPES_CALENDAR,
+        )
         self.service = build("calendar", "v3", credentials=self.creds)
 
 
