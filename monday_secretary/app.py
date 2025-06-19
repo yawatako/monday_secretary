@@ -251,8 +251,8 @@ async def oauth2callback(request: Request):
     try:
         flow.fetch_token(code=request.query_params.get("code"))
     except Exception as e:
-        # 失敗するときは内容を返すとデバッグしやすい
-        return JSONResponse(status_code=400, content={"detail": str(e)})
+    return JSONResponse(status_code=400,
+                        content={"detail": str(e)})
 
     refresh_token = flow.credentials.refresh_token
     if not refresh_token:
