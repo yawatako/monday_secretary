@@ -301,13 +301,13 @@ components:
           type: string
         category:
           type: string
-          default: ""
+          nullable: true
         emotion:
           type: string
-          default: ""
+          nullable: true
         reason:
           type: string
-          default: ""
+          nullable: true
         timestamp:
           type: string
           format: date-time

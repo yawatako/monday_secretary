@@ -34,9 +34,9 @@ class CalendarRequest(BaseModel):
 class MemoryRequest(BaseModel):
     title: str
     summary: str
-    category: str = ""
-    emotion: str = ""
-    reason: str = ""
+    category: Optional[str] = None
+    emotion: Optional[str] = None
+    reason: Optional[str] = None
     timestamp: datetime = Field(default_factory=datetime.now)
 
 
