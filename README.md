@@ -50,3 +50,13 @@ curl -X POST -H "Content-Type: application/json" \
 Each API client inherits from `BaseClient` which provides a helper
 method for running blocking SDK calls in a background thread. All network
 operations share the same retry logic via the `DEFAULT_RETRY` decorator.
+
+### Error responses
+
+When an internal error occurs, the API returns a JSON body like:
+
+```json
+{"detail": "<exception message>"}
+```
+
+This helps with debugging failing requests.

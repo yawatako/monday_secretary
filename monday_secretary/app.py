@@ -39,7 +39,7 @@ app = FastAPI(title="Monday Secretary API")
 
 async def general_exception_handler(request: Request, exc: Exception):
     logger.exception("unhandled error")
-    return JSONResponse(status_code=500, content={"detail": "internal server error"})
+    return JSONResponse(status_code=500, content={"detail": str(exc)})
 
 
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
