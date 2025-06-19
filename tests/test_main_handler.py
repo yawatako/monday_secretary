@@ -28,7 +28,6 @@ async def test_morning_trigger(monkeypatch):
     monkeypatch.setattr("monday_secretary.main_handler.HealthClient", DummyHealth)
     monkeypatch.setattr("monday_secretary.main_handler.CalendarClient", DummyCal)
     monkeypatch.setattr("monday_secretary.main_handler.WorkClient", DummyWork)
-    monkeypatch.setattr("monday_secretary.main_handler.AcceptanceClient", lambda: None)
     monkeypatch.setattr("monday_secretary.main_handler.BrakeChecker.check", lambda self, h, w={}: DummyBrake(1))
     from monday_secretary import main_handler
     main_handler.MORNING_LOCKS.clear()
@@ -56,7 +55,6 @@ async def test_normal_flow(monkeypatch):
     from monday_secretary import main_handler
     main_handler.MORNING_LOCKS.clear()
     main_handler.LAST_MORNING.clear()
-    monkeypatch.setattr("monday_secretary.main_handler.AcceptanceClient", lambda: None)
 
     reply = await handle_message("今日の体調教えて")
     assert "<CONTEXT>" in reply

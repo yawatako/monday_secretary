@@ -54,7 +54,6 @@ updated : 2025-06-18 (JST)
 |---------|------------|------|
 | **morning_trigger** | YAML: `おはよう` 等 | 今日の体調 / 予定 / ブレーキを Markdown で返す |
 | **evening_trigger** | YAML: `仕事終わり` 等 | 当日の業務記録があれば要約して返す |
-| **self_acceptance_trigger** | YAML: `自己受容` 等 | 今日の自己受容メモを要約して返す |
 | **memory_trigger** | needs_memory() が True | 要約を提示 → ユーザ承認で Notion 保存 |
 | **remember_trigger** | ex. `覚えてる？`, `◯◯のメモ` | (todo) Notion 過去7d 検索 & 上位3件 |
 

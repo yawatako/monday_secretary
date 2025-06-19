@@ -19,22 +19,6 @@ class WorkRequest(BaseModel):
     end_date: Optional[date] = None
 
 
-# ---------- Acceptance（自己受容） ----------
-class AcceptanceRequest(BaseModel):
-    mode: Literal["latest", "period"]
-    start_date: Optional[date] = None
-    end_date: Optional[date] = None
-
-
-class AcceptanceItem(BaseModel):
-    タイムスタンプ: date
-    今の気持ち: str
-    一番印象的だった感情: str
-    今日浮かんだ思考の断片: Optional[str] = None
-    今日の自分にかけたい言葉: Optional[str] = None
-    今日_自分を受け入れられた_瞬間はある: Optional[str] = None
-    書き残しておきたいこと: Optional[str] = None
-
 
 # ---------- カレンダー ----------
 class CalendarRequest(BaseModel):
