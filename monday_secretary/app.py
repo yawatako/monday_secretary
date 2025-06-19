@@ -26,6 +26,7 @@ from .clients.work import WorkClient
 from .models import WorkRequest
 from .clients.calendar import CalendarClient
 from .clients.memory import MemoryClient
+from .clients.tasks import TasksClient
 import os
 import logging
 import traceback
@@ -52,6 +53,14 @@ app.add_exception_handler(RequestValidationError, validation_exception_handler)
 # ---------- Chat (既存) ----------
 class ChatRequest(BaseModel):
     user_msg: str
+
+
+class TaskRequest(BaseModel):
+    action: Literal["add", "complete", "list"]
+    title: str | None = None
+    tags: list[str] | None = None
+    due: str | None = None
+    task_id: str | None = None
 
 
 @app.post("/chat")
@@ -172,6 +181,32 @@ async def get_memory_alias(req: MemorySearchRequest):
         return {"status": "success", "data": result}
     except Exception as e:
         logging.exception("memory_search failed:")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ---------- Tasks ----------
+@app.post("/tasks", tags=["tasks"])
+async def tasks_api(req: TaskRequest):
+    client = TasksClient()
+    try:
+        match req.action:
+            case "add":
+                task = await client.add_task(req.title or "", req.tags, req.due)
+                return {"status": "success", "task": task}
+            case "complete":
+                task_id = req.task_id
+                if not task_id and req.title:
+                    found = await client.find_task_by_title(req.title)
+                    task_id = found.get("id") if found else None
+                if not task_id:
+                    return {"status": "error", "detail": "task not found"}
+                task = await client.complete_task(task_id)
+                return {"status": "success", "task": task}
+            case "list":
+                tasks = await client.list_tasks()
+                return {"status": "success", "tasks": tasks}
+    except Exception as e:
+        logging.exception("tasks_api failed")
         raise HTTPException(status_code=500, detail=str(e))
 
 

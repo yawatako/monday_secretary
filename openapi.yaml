@@ -132,6 +132,25 @@ paths:
                     type: array
                     items:
                       type: object
+  /tasks:
+    post:
+      operationId: handleTasks
+      summary: Google Tasks を操作
+      tags:
+        - Tasks
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TaskRequest"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskResponse"
 components:
   securitySchemes:
     bearerAuth:
@@ -339,3 +358,31 @@ components:
         top_k:
           type: integer
           default: 5
+    TaskRequest:
+      type: object
+      required:
+        - action
+      properties:
+        action:
+          type: string
+          enum: [add, complete, list]
+        title:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        due:
+          type: string
+          format: date
+        task_id:
+          type: string
+    TaskResponse:
+      type: object
+      properties:
+        status:
+          type: string
+        tasks:
+          type: array
+          items:
+            type: object

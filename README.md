@@ -18,6 +18,7 @@ Create a `.env` file with the following variables:
 - `GOOGLE_TASKS_CLIENT_ID`
 - `GOOGLE_TASKS_CLIENT_SECRET`
 - `GOOGLE_TASKS_REFRESH_TOKEN`
+- `GOOGLE_TASKS_LIST_ID` (optional, default `@default`)
 - `NOTION_TOKEN`
 - `NOTION_DB_ID`
 
@@ -37,4 +38,7 @@ curl -X POST -H "Content-Type: application/json" \
 curl -X POST -H "Content-Type: application/json" \
      -d '{"title":"眠い","summary":"会議中にウトウトした"}' \
      http://localhost:8000/memory
+curl -X POST -H "Content-Type: application/json" \
+     -d '{"action":"list"}' \
+     http://localhost:8000/tasks
 ```
