@@ -162,57 +162,34 @@ async def handle_message(user_msg: str, session_id: str = "default") -> str:
 
     # ──────────── 2.5) weekend_trigger ─────────────
     if any(k in user_msg for k in WEEKEND_KWS):
-        start = dt.date.today() - dt.timedelta(days=6)
-        end = dt.date.today()
+        today = dt.date.today()
+        start = today - dt.timedelta(days=today.weekday())
+        end = start + dt.timedelta(days=6)
 
-        tasks = await TasksClient().list_tasks()
+        raw_tasks = await TasksClient().list_tasks()
+        high_tasks: List[str] = []
+        for t in raw_tasks:
+            notes = t.get("notes", "")
+            tags = [w[1:] for w in notes.split() if w.startswith("#")]
+            if "優先度/高" in tags or "緊急度/高" in tags:
+                line = f"- {t.get('title')} ({t.get('due', '-')[:10]})"
+                high_tasks.append(line)
+
         events = await CalendarClient().get_events(
             f"{start}T00:00:00Z", f"{end}T23:59:59Z"
         )
-        health = await HealthClient().period(start, end)
-        works = await WorkClient().period(start, end)
-
-        groups: Dict[str, List[str]] = {}
-        for t in tasks:
-            notes = t.get("notes", "")
-            tags = [w[1:] for w in notes.split() if w.startswith("#")]
-            if not tags:
-                tags = ["その他"]
-            line = f"{t.get('title')} ({t.get('due', '-')[:10]})"
-            for tg in tags:
-                groups.setdefault(tg, []).append(line)
-
-        task_lines = []
-        for tag, items in groups.items():
-            task_lines.append(f"- **#{tag}**")
-            for it in items:
-                task_lines.append(f"  - {it}")
-
         event_lines = [
             f"- {e['summary']} ({e['start']['dateTime'][:10]})" for e in events
         ] or ["- （イベントなし）"]
 
-        health_lines = [
-            f"- {h.get('timestamp', '')[:10]} {h.get('mood', h.get('状態', ''))}"
-            for h in health
-        ] or ["- （データなし）"]
-
-        work_lines = [
-            f"- {w.get('timestamp', '')[:10]} {w.get('daily_summary', '')}"
-            for w in works
-        ] or ["- （記録なし）"]
-
         summary = (
             "**Monday**：週末整理の時間だよ。\n\n"
-            "### 📝 未完タスク\n"
-            + "\n".join(task_lines)
-            + "\n\n### 📅 今週のイベント\n"
+            "### 📅 今週の予定\n"
             + "\n".join(event_lines)
-            + "\n\n### 🩺 体調ログ\n"
-            + "\n".join(health_lines)
-            + "\n\n### 🗒 業務ログ\n"
-            + "\n".join(work_lines)
-            + "\n\n削除・延期・予定化・そのまま、どうするか教えてね。"
+            + "\n\n### 📝 優先タスク\n"
+            + "\n".join(high_tasks or ["- （該当なし）"])
+            + "\n\n来週のカレンダーに持ち越すタスクを選んでね。\n"
+            "わたしがブロック入れとくから。"
         )
         return summary
 
