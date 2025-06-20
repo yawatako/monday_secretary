@@ -209,7 +209,22 @@ async def tasks_api(req: TaskRequest):
                 task = await client.complete_task(task_id)
                 return {"status": "success", "task": task}
             case "list":
-                tasks = await client.list_tasks()
+                raw_tasks = await client.list_tasks()
+                tasks = []
+                for t in raw_tasks:
+                    notes = t.get("notes", "")
+                    tags = [w[1:] for w in notes.split() if w.startswith("#")]
+                    status = "done" if t.get("status") == "completed" else "pending"
+                    tasks.append(
+                        {
+                            "title": t.get("title", ""),
+                            "tags": tags,
+                            "due": t.get("due"),
+                            "status": status,
+                            "created_at": t.get("updated"),
+                            "completed_at": t.get("completed"),
+                        }
+                    )
                 return {"status": "success", "tasks": tasks}
     except Exception as e:
         logging.exception("tasks_api failed")

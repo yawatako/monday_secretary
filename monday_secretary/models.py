@@ -43,3 +43,13 @@ class MemoryRequest(BaseModel):
 class MemorySearchRequest(BaseModel):
     query: str = ""  # 空なら最新順
     top_k: int = 5  # 何件返すか
+
+
+# ---------- Tasks ----------
+class Task(BaseModel):
+    title: str
+    tags: list[str] = []
+    due: Optional[str] = None
+    status: Literal["pending", "done"] = "pending"
+    created_at: datetime
+    completed_at: Optional[datetime] = None

@@ -60,3 +60,28 @@ async def test_normal_flow(monkeypatch):
     assert "<CONTEXT>" in reply
     assert "普通" in reply
 
+
+@pytest.mark.asyncio
+async def test_weekend_trigger(monkeypatch):
+    class DummyTasks:
+        async def list_tasks(self):
+            return [
+                {"title": "T1", "notes": "#優先度/高", "due": "2025-06-19"},
+                {"title": "T2", "notes": "#優先度/低", "due": "2025-06-20"},
+                {"title": "T3", "notes": "#緊急度/高", "due": "2025-06-21"},
+            ]
+
+    class DummyCal:
+        async def get_events(self, start, end):
+            return [
+                {"summary": "会議", "start": {"dateTime": "2025-06-18T10:00:00"}}
+            ]
+
+    monkeypatch.setattr("monday_secretary.main_handler.TasksClient", DummyTasks)
+    monkeypatch.setattr("monday_secretary.main_handler.CalendarClient", DummyCal)
+
+    reply = await handle_message("週末整理して")
+    assert "T1" in reply
+    assert "T3" in reply
+    assert "T2" not in reply
+

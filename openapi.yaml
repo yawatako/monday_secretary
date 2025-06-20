@@ -386,3 +386,22 @@ components:
           type: array
           items:
             type: object
+            properties:
+              title:
+                type: string
+              tags:
+                type: array
+                items:
+                  type: string
+              due:
+                type: string
+                format: date
+              status:
+                type: string
+                enum: [pending, done]
+              created_at:
+                type: string
+                format: date-time
+              completed_at:
+                type: string
+                format: date-time
