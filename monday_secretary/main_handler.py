@@ -118,10 +118,15 @@ async def handle_message(user_msg: str, session_id: str = "default") -> str:
 
             # ② 予定を箇条書き（なければ “なし”）
             if events:
-                today_events = "\n".join(
-                    f"　・{e['summary']}（{e['start']['dateTime'][11:16]}〜）"
-                    for e in events
-                )
+                lines = []
+                for e in events:
+                    start = e.get("start", {})
+                    if "dateTime" in start:
+                        time_text = start["dateTime"][11:16] + "〜"
+                    else:
+                        time_text = "終日"
+                    lines.append(f"　・{e['summary']}（{time_text}）")
+                today_events = "\n".join(lines)
             else:
                 today_events = "　（登録なし。フリータイム！）"
 
@@ -178,9 +183,13 @@ async def handle_message(user_msg: str, session_id: str = "default") -> str:
         events = await CalendarClient().get_events(
             f"{start}T00:00:00Z", f"{end}T23:59:59Z"
         )
-        event_lines = [
-            f"- {e['summary']} ({e['start']['dateTime'][:10]})" for e in events
-        ] or ["- （イベントなし）"]
+        event_lines = []
+        for e in events:
+            start = e.get("start", {})
+            date_text = start.get("dateTime", start.get("date", ""))[:10]
+            event_lines.append(f"- {e['summary']} ({date_text})")
+        if not event_lines:
+            event_lines.append("- （イベントなし）")
 
         summary = (
             "**Monday**：週末整理の時間だよ。\n\n"
