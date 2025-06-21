@@ -87,3 +87,7 @@ When an internal error occurs, the API returns a JSON body like:
 ```
 
 This helps with debugging failing requests.
+
+Validation errors now return a 422 status code with details, while unexpected
+errors are logged and returned as 500. Check the server logs if you need more
+information.
