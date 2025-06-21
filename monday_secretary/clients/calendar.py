@@ -26,7 +26,13 @@ class CalendarClient(BaseClient):
         def _call():
             events = (
                 self.service.events()
-                .list(calendarId="primary", timeMin=time_min, timeMax=time_max)
+                .list(
+                    calendarId="primary",
+                    timeMin=time_min,
+                    timeMax=time_max,
+                    singleEvents=True,
+                    orderBy="startTime",
+                )
                 .execute()
             )
             return events.get("items", [])
