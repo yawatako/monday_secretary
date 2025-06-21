@@ -19,7 +19,10 @@ async def test_morning_trigger(monkeypatch):
 
     class DummyCal:
         async def get_events(self, start, end):
-            return [{"summary": "会議", "start": {"dateTime": "2025-06-18T10:00:00"}}]
+            return [
+                {"summary": "会議", "start": {"dateTime": "2025-06-18T10:00:00"}},
+                {"summary": "休暇", "start": {"date": "2025-06-18"}, "end": {"date": "2025-06-19"}},
+            ]
 
     class DummyWork:
         async def latest(self):
@@ -37,6 +40,8 @@ async def test_morning_trigger(monkeypatch):
     assert "**Monday**" in reply
     assert "良好" in reply
     assert "会議" in reply
+    assert "休暇" in reply
+    assert "終日" in reply
     assert "業務" not in reply
 
 @pytest.mark.asyncio
