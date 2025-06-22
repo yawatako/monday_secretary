@@ -22,13 +22,19 @@ class CalendarClient(BaseClient):
 
 
     @DEFAULT_RETRY
-    async def get_events(self, time_min: str, time_max: str) -> list:
+    async def get_events(self, time_min: str, time_max: str, tz: str | None = None) -> list:
         def _call():
-            events = (
-                self.service.events()
-                .list(calendarId="primary", timeMin=time_min, timeMax=time_max)
-                .execute()
-            )
+            params = {
+                "calendarId": "primary",
+                "timeMin": time_min,
+                "timeMax": time_max,
+                "singleEvents": True,
+                "orderBy": "startTime",
+            }
+            if tz:
+                params["timeZone"] = tz
+
+            events = self.service.events().list(**params).execute()
             return events.get("items", [])
 
         return await self._to_thread(_call)

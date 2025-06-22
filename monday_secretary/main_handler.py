@@ -97,12 +97,13 @@ async def handle_message(user_msg: str, session_id: str = "default") -> str:
             LAST_MORNING[session_id] = now
 
             today = dt.date.today().isoformat()
-            start_iso, end_iso = f"{today}T00:00:00Z", f"{today}T23:59:59Z"
+            start_iso = f"{today}T00:00:00+09:00"
+            end_iso = f"{today}T23:59:59+09:00"
 
             # Health・Calendar を並列取得
             health, events = await asyncio.gather(
                 health_client.latest(),
-                calendar_client.get_events(start_iso, end_iso),
+                calendar_client.get_events(start_iso, end_iso, "Asia/Tokyo"),
             )
 
             # ① 体調詳細を組み立て
@@ -118,10 +119,15 @@ async def handle_message(user_msg: str, session_id: str = "default") -> str:
 
             # ② 予定を箇条書き（なければ “なし”）
             if events:
-                today_events = "\n".join(
-                    f"　・{e['summary']}（{e['start']['dateTime'][11:16]}〜）"
-                    for e in events
-                )
+                lines = []
+                for e in events:
+                    start = e.get("start", {})
+                    if "dateTime" in start:
+                        time_text = start["dateTime"][11:16] + "〜"
+                    else:
+                        time_text = "終日"
+                    lines.append(f"　・{e['summary']}（{time_text}）")
+                today_events = "\n".join(lines)
             else:
                 today_events = "　（登録なし。フリータイム！）"
 
@@ -176,11 +182,15 @@ async def handle_message(user_msg: str, session_id: str = "default") -> str:
                 high_tasks.append(line)
 
         events = await CalendarClient().get_events(
-            f"{start}T00:00:00Z", f"{end}T23:59:59Z"
+            f"{start}T00:00:00+09:00", f"{end}T23:59:59+09:00", "Asia/Tokyo"
         )
-        event_lines = [
-            f"- {e['summary']} ({e['start']['dateTime'][:10]})" for e in events
-        ] or ["- （イベントなし）"]
+        event_lines = []
+        for e in events:
+            start = e.get("start", {})
+            date_text = start.get("dateTime", start.get("date", ""))[:10]
+            event_lines.append(f"- {e['summary']} ({date_text})")
+        if not event_lines:
+            event_lines.append("- （イベントなし）")
 
         summary = (
             "**Monday**：週末整理の時間だよ。\n\n"
@@ -224,8 +234,11 @@ async def handle_message(user_msg: str, session_id: str = "default") -> str:
 
 
     if "calendar" in user_msg:
-        now_iso = dt.datetime.utcnow().isoformat() + "Z"
-        context["events"] = await calendar_client.get_events(now_iso, now_iso)
+        tz = dt.timezone(dt.timedelta(hours=9))
+        now = dt.datetime.now(tz)
+        start_iso = now.isoformat()
+        end_iso = (now + dt.timedelta(days=1)).isoformat()
+        context["events"] = await calendar_client.get_events(start_iso, end_iso, "Asia/Tokyo")
 
     if "remember" in user_msg:
         context["memories"] = await memory_client.search(user_msg)
