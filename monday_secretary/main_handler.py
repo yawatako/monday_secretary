@@ -171,6 +171,8 @@ async def handle_message(user_msg: str, session_id: str = "default") -> str:
         today = dt.date.today()
         start = today - dt.timedelta(days=today.weekday())
         end = start + dt.timedelta(days=6)
+        next_start = end + dt.timedelta(days=1)
+        next_end = next_start + dt.timedelta(days=6)
 
         raw_tasks = await TasksClient().list_tasks()
         high_tasks: List[str] = []
@@ -181,9 +183,14 @@ async def handle_message(user_msg: str, session_id: str = "default") -> str:
                 line = f"- {t.get('title')} ({t.get('due', '-')[:10]})"
                 high_tasks.append(line)
 
-        events = await CalendarClient().get_events(
+        cal = CalendarClient()
+        events = await cal.get_events(
             f"{start}T00:00:00+09:00", f"{end}T23:59:59+09:00", "Asia/Tokyo"
         )
+        next_events = await cal.get_events(
+            f"{next_start}T00:00:00+09:00", f"{next_end}T23:59:59+09:00", "Asia/Tokyo"
+        )
+
         event_lines = []
         for e in events:
             start = e.get("start", {})
@@ -192,10 +199,20 @@ async def handle_message(user_msg: str, session_id: str = "default") -> str:
         if not event_lines:
             event_lines.append("- （イベントなし）")
 
+        next_lines = []
+        for e in next_events:
+            start = e.get("start", {})
+            date_text = start.get("dateTime", start.get("date", ""))[:10]
+            next_lines.append(f"- {e['summary']} ({date_text})")
+        if not next_lines:
+            next_lines.append("- （イベントなし）")
+
         summary = (
             "**Monday**：週末整理の時間だよ。\n\n"
             "### 📅 今週の予定\n"
             + "\n".join(event_lines)
+            + "\n\n### 🔜 来週の予定\n"
+            + "\n".join(next_lines)
             + "\n\n### 📝 優先タスク\n"
             + "\n".join(high_tasks or ["- （該当なし）"])
             + "\n\n来週のカレンダーに持ち越すタスクを選んでね。\n"
