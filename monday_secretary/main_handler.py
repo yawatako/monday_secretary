@@ -236,8 +236,8 @@ async def handle_message(user_msg: str, session_id: str = "default") -> str:
     if "calendar" in user_msg:
         tz = dt.timezone(dt.timedelta(hours=9))
         now = dt.datetime.now(tz)
-        start_iso = now.isoformat()
-        end_iso = (now + dt.timedelta(days=1)).isoformat()
+        start_iso = now.isoformat(timespec="seconds")
+        end_iso = (now + dt.timedelta(days=1)).isoformat(timespec="seconds")
         context["events"] = await calendar_client.get_events(start_iso, end_iso, "Asia/Tokyo")
 
     if "remember" in user_msg:
