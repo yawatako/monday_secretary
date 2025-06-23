@@ -18,7 +18,7 @@ async def test_morning_trigger(monkeypatch):
             return {"状態": "良好"}
 
     class DummyCal:
-        async def get_events(self, start, end):
+        async def get_events(self, start, end, tz=None):
             return [
                 {"summary": "会議", "start": {"dateTime": "2025-06-18T10:00:00"}},
                 {"summary": "休暇", "start": {"date": "2025-06-18"}, "end": {"date": "2025-06-19"}},
@@ -77,7 +77,7 @@ async def test_weekend_trigger(monkeypatch):
             ]
 
     class DummyCal:
-        async def get_events(self, start, end):
+        async def get_events(self, start, end, tz=None):
             return [
                 {"summary": "会議", "start": {"dateTime": "2025-06-18T10:00:00"}}
             ]
