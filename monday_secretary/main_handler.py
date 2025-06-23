@@ -100,14 +100,15 @@ async def handle_message(user_msg: str, session_id: str = "default") -> str:
         async with state:
             LAST_MORNING[session_id] = now
 
-            today = dt.date.today().isoformat()
-            start_iso = f"{today}T00:00:00+09:00"
-            end_iso = f"{today}T23:59:59+09:00"
+            tz = dt.timezone(dt.timedelta(hours=9))
+            today = dt.datetime.now(tz).date()
+            start_iso = dt.datetime.combine(today, dt.time.min, tz).isoformat()
+            end_iso = dt.datetime.combine(today, dt.time.max, tz).isoformat()
 
             # Health・Calendar を並列取得
             health, events = await asyncio.gather(
-                health_client.latest(),
-                calendar_client.get_events(start_iso, end_iso, "Asia/Tokyo"),
+            health_client.latest(),
+            calendar_client.get_events(start_iso, end_iso, "Asia/Tokyo"),
             )
 
             # ① 体調詳細を組み立て
