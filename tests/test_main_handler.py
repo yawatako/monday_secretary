@@ -77,9 +77,17 @@ async def test_weekend_trigger(monkeypatch):
             ]
 
     class DummyCal:
+        def __init__(self):
+            self.calls = 0
+
         async def get_events(self, start, end, tz=None):
+            self.calls += 1
+            if self.calls == 1:
+                return [
+                    {"summary": "会議", "start": {"dateTime": "2025-06-18T10:00:00"}}
+                ]
             return [
-                {"summary": "会議", "start": {"dateTime": "2025-06-18T10:00:00"}}
+                {"summary": "来週会議", "start": {"dateTime": "2025-06-25T09:00:00"}}
             ]
 
     monkeypatch.setattr("monday_secretary.main_handler.TasksClient", DummyTasks)
@@ -89,4 +97,5 @@ async def test_weekend_trigger(monkeypatch):
     assert "T1" in reply
     assert "T3" in reply
     assert "T2" not in reply
+    assert "来週会議" in reply
 
