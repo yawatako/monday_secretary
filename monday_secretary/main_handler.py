@@ -3,6 +3,11 @@ from typing import Dict, List
 
 from dotenv import load_dotenv
 
+# ─── 共通定数 --------------------------------------------------------
+# Google Calendar API 用タイムゾーン
+JST = dt.timezone(dt.timedelta(hours=9))
+TZ_NAME = "Asia/Tokyo"
+
 # ─── 自作モジュール -------------------------------------------------
 from .clients import (
     HealthClient,
@@ -49,7 +54,6 @@ PENDING: Dict[str, str] = {}
 # 朝トリガーのロックとタイムスタンプ
 MORNING_LOCKS: Dict[str, asyncio.Lock] = {}
 LAST_MORNING: Dict[str, dt.datetime] = {}
-
 
 # ────────────────────────────────────────────────────────────────
 async def handle_message(user_msg: str, session_id: str = "default") -> str:
