@@ -13,12 +13,25 @@ from .base import (
 class CalendarClient(BaseClient):
     """Access Google Calendar API."""
 
-    def __init__(self):
-        self.creds = service_account.Credentials.from_service_account_file(
-            SA_PATH,
-            scopes=SCOPES_CALENDAR,
-        )
-        self.service = build("calendar", "v3", credentials=self.creds)
+    async def get_events(
+        self,
+        time_min: str,
+        time_max: str,
+        tz: str = "Asia/Tokyo",
+    ) -> list:
+        def _call():
+            params = {
+                "calendarId": "primary",
+                "timeMin": time_min,
+                "timeMax": time_max,
+                "singleEvents": True,
+                "orderBy": "startTime",
+                "timeZone": tz,        # ← ここでタイムゾーンをまとめて指定
+            }
+            events = self.service.events().list(**params).execute()
+            return events.get("items", [])
+
+        return await self._to_thread(_call)
 
 
     @DEFAULT_RETRY
