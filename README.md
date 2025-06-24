@@ -87,6 +87,16 @@ day (Asia/Tokyo) is used automatically.  When `datetime` objects are used and no
 timezone is attached, **Asia/Tokyo** is assumed.
 The client converts these values to properly formatted strings before calling the Google Calendar API.
 
+### Example: today's events
+
+If you just want to see the events scheduled for today (Asia/Tokyo), run the sample script in `examples/calendar_today.py`:
+
+```bash
+python examples/calendar_today.py
+```
+
+This will print the summaries of today's events to your console.
+
 ### Error responses
 
 When an internal error occurs, the API returns a JSON body like:
