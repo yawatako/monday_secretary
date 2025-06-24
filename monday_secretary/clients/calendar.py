@@ -36,7 +36,7 @@ class CalendarClient(BaseClient):
     ) -> list:
         tzinfo = ZoneInfo(tz)
         if time_min is None or time_max is None:
-            today = date.today()
+            today = datetime.now(ZoneInfo(tz)).date()
             if time_min is None:
                 time_min = datetime.combine(today, time.min, tzinfo)
             if time_max is None:
