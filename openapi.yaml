@@ -275,14 +275,17 @@ components:
             - delete
         calendar_id:
           type: string
+          example: yawata.three.personalities@gmail.com
         summary:
           type: string
         start:
           type: string
           format: date-time
+          description: 未指定なら当日の開始
         end:
           type: string
           format: date-time
+          description: 未指定なら当日の終了
         event_id:
           type: string
     CalendarEvent:

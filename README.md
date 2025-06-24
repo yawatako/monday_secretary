@@ -16,6 +16,7 @@ Create a `.env` file with the following variables:
 - `GOOGLE_CLIENT_ID`
 - `GOOGLE_CLIENT_SECRET`
 - `GOOGLE_REFRESH_TOKEN`
+- `CALENDAR_ID` (optional, default `yawata.three.personalities@gmail.com`)
 - `GOOGLE_OAUTH_CLIENT_ID`
 - `GOOGLE_OAUTH_CLIENT_SECRET`
 - `GOOGLE_TASKS_REFRESH_TOKEN`
@@ -81,9 +82,10 @@ operations share the same retry logic via the `DEFAULT_RETRY` decorator.
 ### Calendar notes
 
 `/calendar` and `CalendarClient.get_events()` accept `start` and `end` as
-`datetime` objects or ISO8601 strings.  When `datetime` objects are used and no
-timezone is attached, **Asia/Tokyo** is assumed.  The client converts these
-values to properly formatted strings before calling the Google Calendar API.
+`datetime` objects or ISO8601 strings.  If either value is omitted, the current
+day (Asia/Tokyo) is used automatically.  When `datetime` objects are used and no
+timezone is attached, **Asia/Tokyo** is assumed.
+The client converts these values to properly formatted strings before calling the Google Calendar API.
 
 ### Error responses
 

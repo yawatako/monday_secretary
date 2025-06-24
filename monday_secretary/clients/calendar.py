@@ -1,8 +1,12 @@
 from googleapiclient.discovery import build
 from google.oauth2 import service_account
-from datetime import datetime
+from datetime import datetime, date, time, timedelta
 from zoneinfo import ZoneInfo
+from os import getenv
 from .base import BaseClient, DEFAULT_RETRY, SA_PATH, SCOPES_CALENDAR
+
+DEFAULT_CAL_ID = getenv("CALENDAR_ID", "yawata.three.personalities@gmail.com")
+
 
 class CalendarClient(BaseClient):
     """Access Google Calendar API."""
@@ -23,10 +27,26 @@ class CalendarClient(BaseClient):
         return dt_or_str
 
     @DEFAULT_RETRY
-    async def get_events(self, time_min: datetime | str, time_max: datetime | str, tz: str = "Asia/Tokyo") -> list:
+    async def get_events(
+        self,
+        time_min: datetime | str | None = None,
+        time_max: datetime | str | None = None,
+        tz: str = "Asia/Tokyo",
+        calendar_id: str | None = None,
+    ) -> list:
+        tzinfo = ZoneInfo(tz)
+        if time_min is None or time_max is None:
+            today = date.today()
+            if time_min is None:
+                time_min = datetime.combine(today, time.min, tzinfo)
+            if time_max is None:
+                time_max = datetime.combine(today, time.max, tzinfo)
+
+        cal_id = calendar_id or DEFAULT_CAL_ID
+
         def _call():
             params = {
-                "calendarId": "primary",
+                "calendarId": cal_id,
                 "timeMin": self._to_iso(time_min, tz),
                 "timeMax": self._to_iso(time_max, tz),
                 "singleEvents": True,
@@ -35,5 +55,5 @@ class CalendarClient(BaseClient):
             }
             events = self.service.events().list(**params).execute()
             return events.get("items", [])
-
+        
         return await self._to_thread(_call)
