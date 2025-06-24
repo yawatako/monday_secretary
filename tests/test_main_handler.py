@@ -54,8 +54,13 @@ async def test_normal_flow(monkeypatch):
         async def latest(self):
             return {}
 
+    class DummyCal:
+        async def get_events(self, start, end, tz=None):
+            return []
+
     monkeypatch.setattr("monday_secretary.main_handler.HealthClient", DummyHealth)
     monkeypatch.setattr("monday_secretary.main_handler.WorkClient", DummyWork)
+    monkeypatch.setattr("monday_secretary.main_handler.CalendarClient", DummyCal)
     monkeypatch.setattr("monday_secretary.main_handler.BrakeChecker.check", lambda self, h, w={}: DummyBrake(1))
     from monday_secretary import main_handler
     main_handler.MORNING_LOCKS.clear()
@@ -90,8 +95,18 @@ async def test_weekend_trigger(monkeypatch):
                 {"summary": "来週会議", "start": {"dateTime": "2025-06-25T09:00:00"}}
             ]
 
+    class DummyHealth:
+        async def latest(self):
+            return {}
+
+    class DummyWork:
+        async def latest(self):
+            return {}
+
     monkeypatch.setattr("monday_secretary.main_handler.TasksClient", DummyTasks)
     monkeypatch.setattr("monday_secretary.main_handler.CalendarClient", DummyCal)
+    monkeypatch.setattr("monday_secretary.main_handler.HealthClient", DummyHealth)
+    monkeypatch.setattr("monday_secretary.main_handler.WorkClient", DummyWork)
 
     reply = await handle_message("週末整理して")
     assert "T1" in reply
