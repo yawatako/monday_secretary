@@ -127,11 +127,20 @@ async def handle_message(user_msg: str, session_id: str = "default") -> str:
                 lines = []
                 for e in events:
                     start = e.get("start", {})
-                    if "dateTime" in start:
-                        time_text = start["dateTime"][11:16] + "〜"
-                    else:
+                    summary = e.get("summary", "（無題）")
+
+                    # dateTime（時間指定）か date（終日）かで分岐
+                    start_time = start.get("dateTime")
+                    start_date = start.get("date")
+
+                    if start_time:
+                        time_text = start_time[11:16] + "〜"
+                    elif start_date:
                         time_text = "終日"
-                    lines.append(f"　・{e['summary']}（{time_text}）")
+                    else:
+                        time_text = "？"
+
+                    lines.append(f"　・{summary}（{time_text}）")
                 today_events = "\n".join(lines)
             else:
                 today_events = "　（登録なし。フリータイム！）"
